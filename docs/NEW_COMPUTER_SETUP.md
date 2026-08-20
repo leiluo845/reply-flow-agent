@@ -27,6 +27,8 @@ gh repo clone leiluo845/reply-flow-agent
 Set-Location 'reply-flow-agent'
 ```
 
+当前这台电脑因为 GitHub HTTPS 连接不稳定，已为本仓库配置过一把仅用于 `reply-flow-agent` 的可写 deploy key，并把本地 remote 切到 SSH。换电脑时不需要复用这台电脑的私钥；推荐先用 GitHub CLI 登录后克隆。如果新电脑 HTTPS 仍不稳定，再为新电脑单独配置 SSH key 或 deploy key。
+
 ## 3. 重建 Python 环境
 
 `.venv` 不会上传 GitHub，必须在新电脑重建：
@@ -46,7 +48,7 @@ python -m uv python install 3.11.9
 python -m uv venv --python 3.11.9 .venv
 ```
 
-项目产生依赖清单后，再执行对应安装命令。阶段 0 当前没有业务依赖需要恢复。
+项目产生依赖清单后，再执行对应安装命令。阶段 1 当前没有业务依赖需要恢复。
 
 ## 4. 恢复本地配置
 
@@ -65,7 +67,7 @@ Get-Content '.\START_HERE.md'
 Get-Content '.\PROJECT_STATUS.md'
 ```
 
-把 `START_HERE.md` 中的启动提示词交给新的 AI。开始修改前先运行仓库已有测试；完成一个阶段后执行：
+把 `START_HERE.md` 中的启动提示词交给新的 AI。阶段 1 后，新 AI 还必须阅读 `docs/product_contract.md`、`docs/scenario_catalog.md`、`docs/state_catalog.md` 和 `docs/decision_log.md`。开始修改前先运行仓库已有测试；完成一个阶段后执行：
 
 ```powershell
 git add .

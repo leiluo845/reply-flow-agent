@@ -5,13 +5,18 @@
 1. [PROJECT_STATUS.md](./PROJECT_STATUS.md)
 2. [ReplyFlow PRD v2.0](./docs/requirements/ReplyFlow高风险售后Agent_PRD.md)
 3. [ReplyFlow 项目行动指南 v2.0](./docs/requirements/ReplyFlow项目行动指南.md)
-4. [新电脑恢复指南](./docs/NEW_COMPUTER_SETUP.md)
+4. [阶段 1 产品契约](./docs/product_contract.md)
+5. [阶段 1 场景目录](./docs/scenario_catalog.md)
+6. [阶段 1 状态目录](./docs/state_catalog.md)
+7. [阶段 1 决策日志](./docs/decision_log.md)
+8. [新电脑恢复指南](./docs/NEW_COMPUTER_SETUP.md)
 
 ## 当前状态
 
 - 阶段 0 已完成：Python 3.11.9 虚拟环境、独立 Git 仓库和基础文件已建立。
+- 阶段 1 已完成：产品契约、场景目录、状态目录和决策日志已冻结。
 - 尚未安装业务框架，尚未编写业务代码。
-- 下一阶段是阶段 1：冻结场景、取消项和状态文档。
+- 下一阶段是阶段 2：Dify 最小 POC。
 
 接手者不能只相信本段状态。必须检查 Git、现有文件和测试结果；若 `PROJECT_STATUS.md` 更新日期更晚，以实际仓库和测试结果为准。
 
@@ -42,9 +47,9 @@
 ```text
 你现在接手 ReplyFlow AI Agent 产品作品集项目。
 
-请完整阅读 START_HERE.md、PROJECT_STATUS.md、docs/requirements 下的 PRD 和行动指南，然后检查 git status、git log、当前代码与测试。
+请完整阅读 START_HERE.md、PROJECT_STATUS.md、docs/requirements 下的 PRD 和行动指南，以及 docs/product_contract.md、docs/scenario_catalog.md、docs/state_catalog.md、docs/decision_log.md，然后检查 git status、git log、当前代码与测试。
 
 用户技术背景较弱，说明使用中文。每次只完成一个阶段，不使用真实公司数据，不虚构业务收益，不新增 PRD 禁止的角色、工单、政策治理或真实外部写操作。完成后报告修改文件、命令、测试、人工验收、已知问题和下一步，并更新 PROJECT_STATUS.md。
 
-先汇报当前真实状态和本轮建议，不要一次生成整个项目。
+当前下一阶段是阶段 2：Dify 最小 POC。先汇报当前真实状态和本轮建议，不要一次生成整个项目。
 ```
