@@ -10,13 +10,17 @@
 6. [阶段 1 状态目录](./docs/state_catalog.md)
 7. [阶段 1 决策日志](./docs/decision_log.md)
 8. [新电脑恢复指南](./docs/NEW_COMPUTER_SETUP.md)
+9. [阶段 2 Dify Workflow Spec](./poc/dify/workflow_spec.md)
+10. [阶段 2 POC Cases](./poc/dify/poc_cases.md)
 
 ## 当前状态
 
 - 阶段 0 已完成：Python 3.11.9 虚拟环境、独立 Git 仓库和基础文件已建立。
 - 阶段 1 已完成：产品契约、场景目录、状态目录和决策日志已冻结。
+- 阶段 2 进行中：Dify POC 提示词、Workflow 规格、8 条测试案例和结果模板已准备。
+- 阶段 2 尚未完成：还缺 Dify Workflow 的 8 条真实运行记录、Run ID、人工评分和失败分析。
 - 尚未安装业务框架，尚未编写业务代码。
-- 下一阶段是阶段 2：Dify 最小 POC。
+- 当前下一步是登录 Dify Cloud，按 `poc/dify/workflow_spec.md` 创建 `ReplyFlow POC` 并运行 `poc/dify/poc_cases.md` 的 8 条案例。
 
 接手者不能只相信本段状态。必须检查 Git、现有文件和测试结果；若 `PROJECT_STATUS.md` 更新日期更晚，以实际仓库和测试结果为准。
 
@@ -51,5 +55,5 @@
 
 用户技术背景较弱，说明使用中文。每次只完成一个阶段，不使用真实公司数据，不虚构业务收益，不新增 PRD 禁止的角色、工单、政策治理或真实外部写操作。完成后报告修改文件、命令、测试、人工验收、已知问题和下一步，并更新 PROJECT_STATUS.md。
 
-当前下一阶段是阶段 2：Dify 最小 POC。先汇报当前真实状态和本轮建议，不要一次生成整个项目。
+当前阶段是阶段 2：Dify 最小 POC。先检查 `poc/dify/` 是否已有 `poc_results.md` 和真实 Run ID；若没有，继续创建/运行 Dify Workflow，不要伪造结果，不要进入阶段 3。
 ```
