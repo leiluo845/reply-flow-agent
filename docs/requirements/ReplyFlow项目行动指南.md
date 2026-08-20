@@ -65,6 +65,8 @@ ReplyFlow 不是独立聊天机器人，也不是第二套客服系统。它是�
 
 AI 每阶段结束必须给出：修改文件、命令、测试结果、人工验收、已知问题和下一阶段。
 
+每个阶段完成后必须提交并推送到 GitHub。只有 `git status --short --branch` 显示本地分支与 `origin/main` 对齐，且远程 `main` 能看到本阶段最新提交，才算该阶段真正完成。若提交成功但推送失败，本阶段只能标记为“本地完成、跨设备备份未完成”，必须继续重试推送或明确记录网络阻塞原因。
+
 ### 2.2 报错反馈模板
 
 ```text
@@ -153,6 +155,7 @@ PROJECT_STATUS 记录当前阶段、完成项、测试、已知问题、下一�
 ```powershell
 git add .gitignore .env.example README.md PROJECT_STATUS.md
 git commit -m "chore: initialize ReplyFlow project"
+git push origin main
 ```
 
 **常见失败**：PowerShell 禁止激活时仅执行当前进程的 ExecutionPolicy；不要关闭系统安全设置。
@@ -194,7 +197,7 @@ git diff --check
 
 **完成定义**：新 AI 只读四份 docs 即可复述正确产品模型。
 
-**Git**：`git add docs PROJECT_STATUS.md; git commit -m "docs: freeze embedded ReplyFlow scope"`
+**Git**：`git add docs PROJECT_STATUS.md; git commit -m "docs: freeze embedded ReplyFlow scope"; git push origin main`
 
 **常见失败**：AI 把三级解释成主管审批时，停止本阶段并按 PRD 第 7.4 节改为店管核对。
 
@@ -235,7 +238,7 @@ Draft 输入 email、verified_facts_json、reply_basis_json、risk_context_json�
 
 **完成定义**：有 8 条真实 POC 运行记录和失败分析，不只是流程图。
 
-**Git**：`git add poc PROJECT_STATUS.md; git commit -m "docs: validate Dify analysis and drafting POC"`
+**Git**：`git add poc PROJECT_STATUS.md; git commit -m "docs: validate Dify analysis and drafting POC"; git push origin main`
 
 **常见失败**：Dify 输出夹杂解释文字时，使用结构化输出或加强 JSON 约束；不要手工改结果冒充成功。
 
@@ -268,7 +271,7 @@ python -m streamlit run app.py
 
 **完成定义**：工程可启动，业务逻辑尚未塞入页面。
 
-**Git**：`git add .; git commit -m "feat: scaffold ReplyFlow embedded workbench"`
+**Git**：`git add .; git commit -m "feat: scaffold ReplyFlow embedded workbench"; git push origin main`
 
 **常见失败**：AI 加入 FastAPI、LangGraph、Docker 或前端框架时，删除无必要依赖再提交。
 
@@ -304,7 +307,7 @@ rg -n "@example.com|basis_id|section_id" data
 
 **完成定义**：数据关联完整，三档处理均有案例。
 
-**Git**：`git add data scripts tests PROJECT_STATUS.md; git commit -m "feat: add fictional ReplyFlow data"`
+**Git**：`git add data scripts tests PROJECT_STATUS.md; git commit -m "feat: add fictional ReplyFlow data"; git push origin main`
 
 **常见失败**：数据过于完美时，增加缺订单号、拼写错误、多诉求、订单冲突和工具失败案例。
 
@@ -336,7 +339,7 @@ python -m pytest tests\test_db.py tests\test_repositories.py -q
 
 **完成定义**：可从种子数据重建所有状态。
 
-**Git**：`git add src scripts tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow data and aggregation model"`
+**Git**：`git add src scripts tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow data and aggregation model"; git push origin main`
 
 **常见失败**：数据库提交到 Git 时，补 `.gitignore` 并只提交初始化脚本和种子。
 
@@ -372,7 +375,7 @@ python -m pytest -q
 
 **完成定义**：动态演示的前半段有真实数据库变化，不是 UI 动画。
 
-**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add simulated email ingestion and aggregation"`
+**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add simulated email ingestion and aggregation"; git push origin main`
 
 **常见失败**：系统为缺失订单号自动选择订单时立即修正；关联订单只可由演示者显式选择。
 
@@ -413,7 +416,7 @@ send只写本地outbox。
 
 **完成定义**：Tool 层能独立证明事实来源和写入限制。
 
-**Git**：`git add src tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow MCP tools"`
+**Git**：`git add src tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow MCP tools"; git push origin main`
 
 **常见失败**：只在页面控制确认不合格；MCP 写工具必须独立拒绝未确认请求。
 
@@ -440,7 +443,7 @@ send只写本地outbox。
 
 **完成定义**：Skills 和依据可版本化、可测试。
 
-**Git**：`git add skills src tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow skills and reply basis"`
+**Git**：`git add skills src tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow skills and reply basis"; git push origin main`
 
 **常见失败**：AI 把 reply_basis 重命名为政策中心并加管理状态时，按 PRD 禁止项删除。
 
@@ -467,7 +470,7 @@ send只写本地outbox。
 
 **完成定义**：高风险召回测试 100%，处理级别可解释。
 
-**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add AI level routing and risk gateway"`
+**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add AI level routing and risk gateway"; git push origin main`
 
 **常见失败**：把“缺订单号请求补充”自动判为一级时，以 PRD v2.0 为准改成二级，除非后续用户明确重新决策。
 
@@ -494,7 +497,7 @@ Demo Mode使用有限可解释规则，不调用模型；仍真实调用8个MCP 
 
 **完成定义**：稳定演示不依赖网络和模型。
 
-**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow demo workflow"`
+**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow demo workflow"; git push origin main`
 
 **常见失败**：Demo 直接按 case_id 返回整段答案不合格；必须逐步调用本地能力。
 
@@ -529,7 +532,7 @@ Dify不能执行发送、退款、改订单、工单、审批，也不能覆盖r
 
 **完成定义**：自由输入模式可用，业务控制仍在本地。
 
-**Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Dify interactive mode"`
+**Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Dify interactive mode"; git push origin main`
 
 **常见失败**：不要把 API Key 粘贴给 AI；只提供脱敏错误和响应结构。
 
@@ -582,7 +585,7 @@ python -m streamlit run app.py
 
 **完成定义**：面试官能看到真实动态流程，而不是静态展示或动画。
 
-**Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"`
+**Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"; git push origin main`
 
 **常见失败**：Streamlit rerun 重复执行时，使用 session state + operation_id 修复，不能只把按钮隐藏。
 
@@ -613,7 +616,7 @@ python -m streamlit run app.py
 
 **完成定义**：人机协同是端到端约束，不是提示文案。
 
-**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "test: verify ReplyFlow control loop"`
+**Git**：`git add src tests PROJECT_STATUS.md; git commit -m "test: verify ReplyFlow control loop"; git push origin main`
 
 **常见失败**：如果一级自动处理与“confirmed=true”冲突，控制层以系统确认类型写入，但仍需风险网关通过、白名单命中和完整审计。
 
@@ -649,7 +652,7 @@ python -m pytest -q
 
 **完成定义**：评测结果可复现，处理级别开放范围有证据。
 
-**Git**：`git add evals tests docs PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow evaluation and go-no-go"`
+**Git**：`git add evals tests docs PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow evaluation and go-no-go"; git push origin main`
 
 **常见失败**：Demo 100% 时先检查是否按 case_id 或 expected 硬编码。
 
@@ -674,7 +677,7 @@ python -m pytest -q
 
 **完成定义**：页面同时能展示值得做和不值得做的参数区间。
 
-**Git**：`git add src app.py tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow ROI sensitivity analysis"`
+**Git**：`git add src app.py tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow ROI sensitivity analysis"; git push origin main`
 
 ---
 
@@ -709,7 +712,7 @@ python -m streamlit run app.py
 
 **完成定义**：可运行 Demo + 代码 + 评测 + HTML/PDF + 视频五类材料齐全。
 
-**Git**：提交 README、docs 和轻量案例页；通常不提交视频。
+**Git**：提交 README、docs 和轻量案例页并推送到 GitHub；通常不提交视频。
 
 **常见失败**：如果视频只展示预置静态会话，重新录制动态接入过程。
 
