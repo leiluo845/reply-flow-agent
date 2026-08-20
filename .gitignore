@@ -1,0 +1,34 @@
+# Python virtual environment
+.venv/
+
+# Secrets and local configuration
+.env
+!.env.example
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local runtime data
+*.db
+*.sqlite
+*.sqlite3
+data/local/
+logs/
+
+# Temporary evaluation output
+evals/results/
+tmp/
+*.tmp
+*.log
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
