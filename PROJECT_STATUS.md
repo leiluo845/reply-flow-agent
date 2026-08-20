@@ -17,7 +17,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 已初始化独立 Git 仓库。
 - 已创建 `.gitignore`、`.env.example`、`README.md` 和本状态文件。
 - 已将 PRD、行动指南、AI 接手说明和新电脑恢复指南纳入仓库。
-- 已准备通过 GitHub 私有仓库进行跨设备备份。
+- 已创建 GitHub 私有仓库 `leiluo845/reply-flow-agent`，并将 `main` 分支推送到远程。
 
 ## 本轮修改
 
@@ -42,7 +42,6 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 下一步
 
-- 推送当前提交到 GitHub 私有仓库。
 - 用户确认后进入阶段 1：冻结场景、取消项和状态文档。
 
 ## 最后更新时间
