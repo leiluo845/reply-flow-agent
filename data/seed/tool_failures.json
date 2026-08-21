@@ -1,0 +1,23 @@
+[
+  {
+    "failure_id": "FAIL-FIND-ORDER-1011",
+    "tool_name": "find_order",
+    "trigger_order_id": "ORD-1011",
+    "error_code": "TOOL_ERROR",
+    "message": "Simulated order lookup timeout for demo testing."
+  },
+  {
+    "failure_id": "FAIL-SHIPPING-1012",
+    "tool_name": "get_shipping_status",
+    "trigger_order_id": "ORD-1012",
+    "error_code": "TOOL_TIMEOUT",
+    "message": "Simulated carrier page timeout for demo testing."
+  },
+  {
+    "failure_id": "FAIL-BASIS-CONFLICT-FINAL-SALE",
+    "tool_name": "search_reply_basis",
+    "trigger_phrase": "final-sale accessory return",
+    "error_code": "BASIS_CONFLICT",
+    "message": "Simulated conflicting reply basis for final-sale item with damage claim."
+  }
+]

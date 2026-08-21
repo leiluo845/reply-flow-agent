@@ -1,5 +1,5 @@
 import replyflow
-from replyflow import AppSettings, load_settings
+from replyflow.config import AppSettings, load_settings
 
 
 def test_package_imports() -> None:

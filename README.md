@@ -12,6 +12,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 3：已完成最小工程骨架。项目现在可以安装依赖、运行测试，并启动一个仅展示定位和未实现提示的 Streamlit 页面。
 
+阶段 4：已完成全虚构种子数据、只读回复依据和校验脚本。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -20,9 +22,12 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m pip install -e .
 .\.venv\Scripts\python.exe -m pytest -q
+python scripts\validate_seed_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
 阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送。
+
+阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 
 继续开发或在新电脑恢复项目时，请先阅读 [START_HERE.md](./START_HERE.md)。正式需求以仓库中的 [PRD](./docs/requirements/ReplyFlow高风险售后Agent_PRD.md) 和[行动指南](./docs/requirements/ReplyFlow项目行动指南.md)为准。
