@@ -48,7 +48,19 @@ python -m uv python install 3.11.9
 python -m uv venv --python 3.11.9 .venv
 ```
 
-项目产生依赖清单后，再执行对应安装命令。阶段 1 当前没有业务依赖需要恢复。
+安装阶段 3 依赖并把本地包装入虚拟环境：
+
+```powershell
+python -m pip install -r requirements.txt
+python -m pip install -e .
+python -m pytest -q
+```
+
+测试通过后，可启动当前最小页面：
+
+```powershell
+python -m streamlit run app.py
+```
 
 ## 4. 恢复本地配置
 
