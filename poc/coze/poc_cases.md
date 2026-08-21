@@ -1,4 +1,4 @@
-# ReplyFlow Dify POC：POC Cases（8 条测试案例）
+# ReplyFlow Coze POC：POC Cases（8 条测试案例）
 
 > 版本：v0.1（阶段 2）  
 > 用途：验证 Analyze 和 Draft 两个节点的边界，不把离线标准答案传给模型。
@@ -106,7 +106,7 @@ Analyze 期望：`is_buyer_message=false`、`intent=non_buyer_message`。系统�
 
 ## 5. Draft 输入夹具（可逐条复制）
 
-以下 JSON 是 POC 专用虚构输入。它们模拟“本地只读工具已经完成查询”的结果，不代表 Dify 自己查到了订单。`risk_context_json` 也是测试输入，不允许 Dify 改写最终风险等级。
+以下 JSON 是 POC 专用虚构输入。它们模拟“本地只读工具已经完成查询”的结果，不代表 Coze 自己查到了订单。`risk_context_json` 也是测试输入，不允许 Coze 改写最终风险等级。
 
 ### P01 Draft：普通物流
 

@@ -1,12 +1,12 @@
-# ReplyFlow Dify POC：Analyze Prompt（邮件分析提示词）
+# ReplyFlow Coze POC：Analyze Prompt（邮件分析提示词）
 
 > 版本：v0.1（阶段 2）  
-> 用途：验证 Dify 是否能把一封英文站内信稳定转换为可被本地控制层解析的结构化分析结果。  
+> 用途：验证 Coze 是否能把一封英文站内信稳定转换为可被本地控制层解析的结构化分析结果。  
 > 边界：只分析，不查库、不发送、不生成最终回复、不修改任何业务状态。
 
-## 1. 在 Dify 中的使用方式
+## 1. 在 Coze 中的使用方式
 
-把以下内容粘贴到 Dify Workflow 的 LLM 节点 `analyze` 的 System Prompt。节点输出必须配置为 JSON（如果当前 Dify 版本提供 Structured Output，优先使用 Structured Output；没有时保留 JSON-only 约束）。
+把以下内容粘贴到 Coze Workflow 的 LLM 节点 `analyze` 的 System Prompt。优先在节点中定义结构化输出参数；如果当前工作区只支持文本输出，则保留 JSON-only 约束，并在结束节点前增加 JSON 解析/校验节点。
 
 运行时只传入本次任务的 `subject`、`body` 和可选 `order_context_id`。不要把 `expected_intent`、`expected_level` 或 POC 的标准答案传入模型；标准答案只用于离线评测。
 

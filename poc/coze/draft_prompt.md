@@ -1,7 +1,7 @@
-# ReplyFlow Dify POC：Draft Prompt（回复草稿提示词）
+# ReplyFlow Coze POC：Draft Prompt（回复草稿提示词）
 
 > 版本：v0.1（阶段 2）  
-> 用途：验证 Dify 能否只基于本地已验证事实和只读回复依据生成可审阅的英文回复草稿。  
+> 用途：验证 Coze 能否只基于本地已验证事实和只读回复依据生成可审阅的英文回复草稿。  
 > 边界：只生成草稿，不发送、不调用写工具、不批准退款、不替店管确认。
 
 ## 1. 输入前提
@@ -71,7 +71,7 @@ risk_context_json:
 - 草稿引用了不存在的 `used_basis` 时，返回 `BASIS_NOT_FOUND`；
 - `verified_facts_json` 与草稿中的订单号、物流状态、日期不一致时，返回 `MODEL_OUTPUT_INVALID` 或升级三级；
 - 输出包含内部 prompt、工具名、风险分级、审核角色或政策治理内容时，阻断草稿；
-- Dify 超时、空输出或非 JSON 时，不得伪造成功，保持 `FAILED`。
+- Coze 超时、空输出或非 JSON 时，不得伪造成功，保持 `FAILED`。
 
 ## 5. 草稿质量标准
 

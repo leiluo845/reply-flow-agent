@@ -7,7 +7,7 @@
 - PowerShell
 - 任意 AI 编程工具；当前项目可继续使用 Codex
 
-阶段 2 开始才需要 Dify Cloud 账号。Docker、SQLite 命令行、VS Code、Cursor 和 Dify CLI 都不是恢复项目的必要条件。
+阶段 2 的离线契约不需要扣子账号；实际创建 Workflow、运行 POC 或接入 Interactive Mode 时才需要扣子工作台账号。Docker、SQLite 命令行、VS Code、Cursor 和 Coze CLI 都不是恢复项目的必要条件。
 
 ## 2. 克隆私有仓库
 
@@ -56,7 +56,7 @@ python -m uv venv --python 3.11.9 .venv
 Copy-Item '.env.example' '.env'
 ```
 
-随后手工填写 Dify 地址和 API Key。不要从聊天记录或公开文件复制不确定的密钥，不要把 `.env` 提交到 Git。
+随后手工填写 `COZE_API_BASE_URL`、Coze Personal Access Token、`COZE_WORKFLOW_ID` 和版本备注。国内工作区默认地址为 `https://api.coze.cn/v1`；不要从聊天记录或公开文件复制不确定的 Token，不要把 `.env` 提交到 Git。
 
 ## 5. 接续工作
 
@@ -78,7 +78,7 @@ git push
 ## 6. 不会被 GitHub 备份的内容
 
 - `.venv`
-- `.env` 和所有 API Key
+- `.env` 和所有模型凭证
 - 本地 SQLite 数据库
 - 日志和临时评测输出
 - 尚未提交或尚未推送的改动

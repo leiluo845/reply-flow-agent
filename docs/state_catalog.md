@@ -51,7 +51,7 @@ ReplyFlow 有四层状态，不应混用：
 | `WAITING_USER_INFO` | 缺订单号、图片、尺码等必要信息 | 准备澄清回复上下文 | `RETRIEVING_REPLY_BASIS`, `RISK_CHECKING` |
 | `COLLECTING_FACTS` | 有足够实体可查 | 调用订单和物流工具 | `RETRIEVING_REPLY_BASIS`, `RISK_CHECKING`, `FAILED` |
 | `RETRIEVING_REPLY_BASIS` | 需要组织回复 | 检索只读回复依据和语气指南 | `DRAFTING`, `RISK_CHECKING` |
-| `DRAFTING` | 事实和依据准备完成 | Demo Router 或 Dify 生成英文草稿 | `RISK_CHECKING`, `FAILED` |
+| `DRAFTING` | 事实和依据准备完成 | Demo Router 或 Coze 生成英文草稿 | `RISK_CHECKING`, `FAILED` |
 | `RISK_CHECKING` | 分析后或草稿后 | 本地风险网关判定 R0-R3 和 L1-L3 | `AUTO_REPLYING`, `WAITING_USER_CONFIRMATION`, `WAITING_HIGH_RISK_CHECK`, `FAILED` |
 | `AUTO_REPLYING` | L1 且风险网关允许 | 系统生成 operation_id 并写入本地 outbox | `COMPLETED`, `FAILED` |
 | `DRAFT_SAVED` | L2 或 L3 草稿保存 | 保存 AI 原稿和当前编辑稿 | `WAITING_USER_CONFIRMATION`, `WAITING_HIGH_RISK_CHECK` |
@@ -104,7 +104,7 @@ stateDiagram-v2
 | `ORDER_NOT_FOUND` | 订单号查不到 | 生成澄清草稿 | R1 / L2 |
 | `IDENTITY_CONFLICT` | 发件人与订单邮箱不匹配 | 显示冲突提示 | R2 / L3 |
 | `TOOL_ERROR` | 本地工具失败 | 显示工具错误和 trace_id | R2 / L3 |
-| `MODEL_ERROR` | Dify 调用失败 | 提示切回 Demo Mode 或重试 | 不自动发送 |
+| `MODEL_ERROR` | Coze 调用失败 | 提示切回 Demo Mode 或重试 | 不自动发送 |
 | `MODEL_OUTPUT_INVALID` | 模型输出无法按 Schema 解析 | 重试一次，失败后升级 | R2 / L3 |
 | `BASIS_NOT_FOUND` | 回复依据无命中 | 显示依据不足 | R1 / L2；若邮件本身高风险则 R2 / L3 |
 | `BASIS_CONFLICT` | 回复依据冲突 | 显示冲突依据 | R2 / L3 |
@@ -134,12 +134,12 @@ stateDiagram-v2
 1. `task_id`、`thread_id`、运行模式；
 2. 状态变化；
 3. 每个工具名、输入摘要、输出摘要、耗时、状态和错误码；
-4. Dify workflow 版本或 Demo Router 版本；
+4. Coze workflow 版本或 Demo Router 版本；
 5. 风险网关命中的规则；
 6. 店管确认动作和核对清单；
 7. `operation_id` 和幂等结果。
 
-日志不得记录 API Key、真实邮箱、真实订单或其他敏感信息。虚构邮箱展示时优先使用 `example.com`，页面可脱敏。
+日志不得记录 Coze PAT/Token、真实邮箱、真实订单或其他敏感信息。虚构邮箱展示时优先使用 `example.com`，页面可脱敏。
 
 ## 9. 状态自查
 

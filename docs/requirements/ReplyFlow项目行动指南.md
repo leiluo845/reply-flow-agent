@@ -1,4 +1,4 @@
-# ReplyFlow 项目行动指南 v2.0
+# ReplyFlow 项目行动指南 v2.1
 
 > 本指南用于让技术背景较弱的产品经理和没有聊天上下文的 AI，按正确顺序完成 ReplyFlow。产品定义以 [ReplyFlow高风险售后Agent_PRD.md](./ReplyFlow高风险售后Agent_PRD.md) 为准。
 
@@ -39,7 +39,7 @@ ReplyFlow 不是独立聊天机器人，也不是第二套客服系统。它是�
 - SQLite；
 - Pydantic 2；
 - MCP Python SDK / FastMCP；
-- Dify Workflow（Interactive Mode）；
+- Coze Workflow（Interactive Mode）；
 - 本地规则 Demo Router（Demo Mode）；
 - Python 简单状态机；
 - pytest；
@@ -96,7 +96,7 @@ work/reply-flow-agent/
 │  ├─ mcp_client.py
 │  ├─ skill_loader.py
 │  ├─ demo_router.py
-│  ├─ dify_client.py
+│  ├─ coze_client.py
 │  ├─ risk_gateway.py
 │  ├─ state_machine.py
 │  ├─ orchestrator.py
@@ -107,7 +107,7 @@ work/reply-flow-agent/
 ├─ evals/reports/
 ├─ tests/
 ├─ docs/
-├─ poc/dify/
+├─ poc/coze/
 ├─ .env.example
 ├─ requirements.txt
 ├─ README.md
@@ -203,19 +203,21 @@ git diff --check
 
 ---
 
-## 阶段 2：Dify 最小 POC
+## 阶段 2：Coze 最小 POC（可后置实际登录）
 
 **目标**：验证自由英文邮件的意图/实体结构化输出和英文草稿生成，不做政策邮件功能。
 
 **输入**：8 条 POC 邮件、内部虚构回复依据草稿。
 
-**工具**：Dify Workflow、浏览器、Markdown。
+**工具**：Markdown；实际搭建时使用扣子（Coze）工作台和浏览器。
+
+**后置策略**：本阶段可以先只完成 `poc/coze/` 下的离线 Prompt、输入输出 Schema、Workflow 规格和案例，不要求立即登录 Coze。阶段 3-10 的本地 Demo Mode 可以先完成；真实 Coze 工作流、8 条运行记录和 API 联调统一在阶段 11 前后完成。未登录时不得把阶段 2 标记为“真实 POC 已通过”。
 
 **AI 提示词**：
 
 ```text
-本轮只准备Dify最小POC，不写正式业务代码。
-创建 poc/dify/analyze_prompt.md、draft_prompt.md、workflow_spec.md、poc_cases.md、poc_results_template.md。
+本轮只准备Coze最小POC，不写正式业务代码。
+创建 poc/coze/analyze_prompt.md、draft_prompt.md、workflow_spec.md、poc_cases.md、poc_results_template.md。
 
 Analyze 输入 subject/body/order_context_id，输出：is_buyer_message、intent、order_id、missing_fields、confidence。
 Draft 输入 email、verified_facts_json、reply_basis_json、risk_context_json，输出：draft_subject、draft_body、used_basis、uncertainties。
@@ -223,24 +225,24 @@ Draft 输入 email、verified_facts_json、reply_basis_json、risk_context_json�
 订单/物流事实只允许使用 verified_facts_json。不得承诺退款、赔偿、金额或确定时限。不得定义主管、工单、退款审核和政策管理流程。
 ```
 
-**Dify 操作**：
+**实际登录 Coze 后的操作**：
 
 1. 新建 Workflow `ReplyFlow POC`。
 2. 建立 `analyze` 和 `draft` 两个 task_type 分支。
 3. Analyze LLM 节点输出严格 JSON。
 4. Draft LLM 节点接收已经验证的事实和只读回复依据。
 5. 用 8 条案例运行并记录结果。
-6. 发布工作流；能导出 DSL 时保存到 `poc/dify/`。
+6. 发布工作流，记录 Workflow ID、工作区/区域、发布时间和版本；如果平台支持导出或复制工作流配置，再保存到 `poc/coze/`。
 
-本 POC 不需要建立用户可见知识库管理页面。若使用 Dify Knowledge，只上传固定的虚构回复依据并记录版本。
+本 POC 不需要建立用户可见知识库管理页面。若使用 Coze Knowledge，只上传固定的虚构回复依据并记录版本。
 
 **验收**：缺订单号不猜测；退款/拒付不直接承诺；输出可被 Pydantic 解析。
 
 **完成定义**：有 8 条真实 POC 运行记录和失败分析，不只是流程图。
 
-**Git**：`git add poc PROJECT_STATUS.md; git commit -m "docs: validate Dify analysis and drafting POC"; git push origin main`
+**Git**：离线材料完成时提交 `docs: prepare Coze POC contract`；真实运行记录完成时再提交 `docs: validate Coze analysis and drafting POC`。两次提交都必须 `git push origin main`。
 
-**常见失败**：Dify 输出夹杂解释文字时，使用结构化输出或加强 JSON 约束；不要手工改结果冒充成功。
+**常见失败**：Coze 输出夹杂解释文字时，使用结构化输出或加强 JSON 约束；不要手工改结果冒充成功。
 
 ---
 
@@ -267,7 +269,7 @@ python -m pytest -q
 python -m streamlit run app.py
 ```
 
-**验收**：页面可打开；未配置 Dify 不崩溃；没有独立聊天首页。
+**验收**：页面可打开；未配置 Coze 不崩溃；没有独立聊天首页。
 
 **完成定义**：工程可启动，业务逻辑尚未塞入页面。
 
@@ -472,13 +474,13 @@ send只写本地outbox。
 
 **Git**：`git add src tests PROJECT_STATUS.md; git commit -m "feat: add AI level routing and risk gateway"; git push origin main`
 
-**常见失败**：把“缺订单号请求补充”自动判为一级时，以 PRD v2.0 为准改成二级，除非后续用户明确重新决策。
+**常见失败**：把“缺订单号请求补充”自动判为一级时，以 PRD v2.1 为准改成二级，除非后续用户明确重新决策。
 
 ---
 
 ## 阶段 10：Demo Mode 与状态机
 
-**目标**：在无 API Key 时让预置案例和有限自由输入真实运行。
+**目标**：在无模型凭证时让预置案例和有限自由输入真实运行。
 
 **AI 提示词**：
 
@@ -503,38 +505,39 @@ Demo Mode使用有限可解释规则，不调用模型；仍真实调用8个MCP 
 
 ---
 
-## 阶段 11：Dify Interactive Mode
+## 阶段 11：Coze Interactive Mode
 
 **目标**：支持演示控制台的自由输入。
 
 **配置**：
 
 ```dotenv
-DIFY_API_BASE=https://api.dify.ai/v1
-DIFY_API_KEY=
-DIFY_WORKFLOW_VERSION=
-DIFY_TIMEOUT_SECONDS=30
+COZE_API_BASE_URL=https://api.coze.cn/v1
+COZE_API_TOKEN=
+COZE_WORKFLOW_ID=
+COZE_WORKFLOW_VERSION=
+COZE_TIMEOUT_SECONDS=30
 ```
 
 **AI 提示词**：
 
 ```text
-实现dify_client.py：Analyze和Draft两次工作流调用；Pydantic校验；处理401/403/429/超时/非JSON/Schema错误；不记录Key。
+实现coze_client.py：通过 `POST {COZE_API_BASE_URL}/workflow/run` 调用已发布 Workflow；请求使用 Bearer PAT、Workflow ID 和 parameters；Analyze 和 Draft 两次工作流调用；Pydantic 校验；处理401/403/429/超时/非JSON/Schema错误；不记录 Token。具体响应字段以实际 Coze OpenAPI 返回为准，不得凭空假设。
 Python必须在Analyze后调用本地Tools，再把verified_facts_json和reply_basis_json传给Draft。
-Dify不能执行发送、退款、改订单、工单、审批，也不能覆盖risk_gateway。
+Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖risk_gateway。
 失败时明确提示并允许切Demo Mode，不静默伪造结果。
 添加mock测试并更新.env.example和README。
 ```
 
-**命令**：`python -m pytest tests\test_dify_client.py tests\test_interactive_orchestrator.py -q`
+**命令**：`python -m pytest tests\test_coze_client.py tests\test_interactive_orchestrator.py -q`
 
-**验收**：未配置 Key 时不崩溃；配置后自由输入可分析；Dify 请求不含 expected 答案和不必要数据。
+**验收**：未配置 Key 时不崩溃；配置后自由输入可分析；Coze 请求不含 expected 答案和不必要数据。
 
 **完成定义**：自由输入模式可用，业务控制仍在本地。
 
-**Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Dify interactive mode"; git push origin main`
+**Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Coze interactive mode"; git push origin main`
 
-**常见失败**：不要把 API Key 粘贴给 AI；只提供脱敏错误和响应结构。
+**常见失败**：不要把 Coze PAT/Token 粘贴给 AI；只提供脱敏错误和响应结构。
 
 ---
 
@@ -646,7 +649,7 @@ python evals\run_eval.py --mode demo
 python -m pytest -q
 ```
 
-配置 Dify 后再运行 Interactive。
+配置 Coze 后再运行 Interactive。
 
 **验收**：Demo/Interactive 分开；失败可回溯；高风险漏判时必须 No-Go。
 
@@ -688,7 +691,7 @@ python -m pytest -q
 **AI 提示词**：
 
 ```text
-完善README：嵌入式定位、取消项、三级处理、动态演示控制台、架构、Dify/自建职责、8个MCP Tools、3个Skills、启动方式、评测、Go/No-Go、限制。
+完善README：嵌入式定位、取消项、三级处理、动态演示控制台、架构、Coze/自建职责、8个MCP Tools、3个Skills、启动方式、评测、Go/No-Go、限制。
 创建5-7分钟面试演示脚本：
 1. 输入一级物流邮件并动态进入站内信；
 2. 输入二级邮件，点击AI回复并编辑；
@@ -754,7 +757,7 @@ python -m streamlit run app.py
 
 - [ ] 高风险识别 100%，无依据事实和未授权承诺 0%。
 - [ ] 所有写入有确认、operation_id 和审计。
-- [ ] API Key、真实数据和敏感日志不进入 Git/截图/视频。
+- [ ] Coze PAT/Token、真实数据和敏感日志不进入 Git/截图/视频。
 - [ ] 30+ 独立评测，失败案例可回放。
 
 ## 4. 推荐面试演示顺序
@@ -766,6 +769,6 @@ python -m streamlit run app.py
 5. **90秒**：输入三级退款拒付邮件，展示风险原因、核对清单和未核对发送拦截。
 6. **45秒**：重复发送，展示 operation_id 幂等。
 7. **60秒**：展示评测与 Go/No-Go，解释当前自动化边界。
-8. **45秒**：解释 Dify + 自建控制层和为什么没有真实公司落地也有验证价值。
+8. **45秒**：解释 Coze + 自建控制层和为什么没有真实公司落地也有验证价值。
 
-面试时先讲邮件动态进入和业务控制，再讲 MCP、Skill、Dify 等技术概念。
+面试时先讲邮件动态进入和业务控制，再讲 MCP、Skill、Coze 等技术概念。

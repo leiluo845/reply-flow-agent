@@ -6,10 +6,10 @@
 
 | 项目 | 内容 |
 |---|---|
-| 文档版本 | v2.0 |
+| 文档版本 | v2.1 |
 | 作者 |  |
 | 创建日期 | 2026-08-20 |
-| 更新日期 | 2026-08-20 |
+| 更新日期 | 2026-08-21 |
 | 评审状态 | 待评审 |
 | 产品阶段 | 独立研究型 MVP / 可运行演示原型 |
 | 关联行动指南 | [ReplyFlow项目行动指南.md](./ReplyFlow项目行动指南.md) |
@@ -26,7 +26,7 @@
 5. 取消客服工单、退款审核请求、主管审核队列和独立退款动作。退款、赔偿、拒付、投诉等高风险内容只生成参考回复，最后由店管核对后发送模拟回复。
 6. 保留三档 AI 处理级别：一级·自动处理、二级·人工确认、三级·高风险核对。处理级别不是风险等级；后台仍使用 R0-R3 风险规则控制动作。
 7. 提供折叠的“演示控制台（模拟邮件接入）”，允许用户输入一行邮件正文，点击“模拟收到邮件”，让邮件真实写入本地收件箱并进入顶部聚合站内信，再由 Agent 处理。
-8. Demo Mode 无 API Key 也能运行，但必须明确是本地规则路由，不得冒充实时大模型理解；Interactive Mode 可调用 Dify。
+8. Demo Mode 无模型凭证也能运行，但必须明确是本地规则路由，不得冒充实时大模型理解；Interactive Mode 可调用 Coze。
 9. 所有发送均为写入本地模拟发件箱，不连接真实 Amazon、邮箱、支付或订单修改接口。
 
 ### 1.2 明确取消项（禁止回退）
@@ -137,26 +137,26 @@ Gorgias AI Agent、Intercom Fin、Zendesk AI Agents、Ada、Kustomer、Sierra、
 | Gorgias AI Agent | 电商订单上下文、客服回复和自动化动作 | 真实渠道覆盖、生产级电商集成、全量客服运营 | 嵌入现有聚合站内信、三级处理和高风险核对 |
 | Intercom Fin | 多渠道客服 Agent、人工接管、安全与评测 | 成熟客服平台、渠道和企业级运营能力 | 邮件从模拟接入到聚合回复的可运行闭环 |
 | Zendesk / Ada / Kustomer | 客服平台、客户上下文、工作流和治理 | CRM、工单、全渠道、多角色权限 | 单店管场景下的回复提效和动作边界 |
-| Dify | 模型编排、Prompt、知识检索和应用发布 | 不把它包装成完整客服业务系统 | 快速验证自由文本分析与草稿生成 |
+| Coze | 模型编排、Prompt、知识检索和应用发布 | 不把它包装成完整客服业务系统 | 快速验证自由文本分析与草稿生成 |
 
 因此，这个项目的意义不是证明市场缺少客服 Agent，而是展示产品经理如何把 Agent 安装到一个具体的 B 端工作流中，并用动态状态、工具证据和评测决定自动化边界。
 
 ### 4.2 Build vs Buy
 
-真实企业如果已有成熟客服平台，应先比较购买成熟方案与内部改造成本。本作品选择“Dify + 自建控制层”只针对个人研究型 MVP：
+真实企业如果已有成熟客服平台，应先比较购买成熟方案与内部改造成本。本作品选择“Coze + 自建控制层”只针对个人研究型 MVP：
 
 | 方案 | 适合之处 | 不足 | 本项目结论 |
 |---|---|---|---|
-| 完全使用 Dify | 快速验证分类、生成和知识检索 | 页面状态、邮件接入模拟、发送确认、幂等和评测不应只藏在可视化流程中 | 不足以支撑完整嵌入式演示 |
+| 完全使用 Coze | 快速验证分类、生成和知识检索 | 页面状态、邮件接入模拟、发送确认、幂等和评测不应只藏在可视化流程中 | 不足以支撑完整嵌入式演示 |
 | 完全自研 | 对状态、权限、日志和界面控制强 | 需要重复建设模型接入与编排能力 | 学习和维护成本过高 |
-| Dify + 自建控制层 | Dify 负责概率型 AI 能力；Python 负责会话状态、工具、风险、确认、幂等、审计和 Demo | 需要维护接口与版本 | **选用** |
+| Coze + 自建控制层 | Coze 负责概率型 AI 能力；Python 负责会话状态、工具、风险、确认、幂等、审计和 Demo | 需要维护接口与版本 | **选用** |
 
-选用混合方案不是因为 Dify 无法完成所有事情，也不是因为自研天然更安全，而是因为：
+选用混合方案不是因为 Coze 无法完成所有事情，也不是因为自研天然更安全，而是因为：
 
-1. 模型输出和 Prompt 变化快，适合在 Dify 中迭代；
+1. 模型输出和 Prompt 变化快，适合在 Coze 中迭代；
 2. 邮件接入、聚合会话、AI 处理级别和发送限制是业务状态，适合用代码测试；
 3. 高风险规则和写操作不能只依赖模型或页面按钮；
-4. Demo Mode 需要脱离 Dify 和 API Key 仍可演示。
+4. Demo Mode 需要脱离 Coze 和模型凭证仍可演示。
 
 ---
 
@@ -340,7 +340,7 @@ RECEIVING
 - 关联模拟订单：仅作为同步上下文，仍需通过 Tool 验证；
 - 无法识别场景：进入二级或三级，并提示需要人工处理；
 - Demo Mode 遇到超出本地规则范围的文本：提示切换 Interactive Mode 或选择预置案例；
-- Interactive Mode 使用 Dify 分析自由文本，但事实、风险、发送和审计仍由本地控制层负责。
+- Interactive Mode 使用 Coze 分析自由文本，但事实、风险、发送和审计仍由本地控制层负责。
 
 ### 8.7 预置案例
 
@@ -391,10 +391,10 @@ flowchart TD
 | 模拟接收 | 控制层 | 正文、主题、发件人、可选订单 | 原始邮件记录 |
 | 来源识别 | Agent/规则 | 邮件内容 | `is_buyer_message` |
 | 聚合 | 控制层 | 原始邮件 | `aggregate_thread` |
-| 分析 | Dify 或 Demo Router | 邮件 | 意图、订单号、缺失信息、置信度 |
+| 分析 | Coze 或 Demo Router | 邮件 | 意图、订单号、缺失信息、置信度 |
 | 事实查询 | MCP Tools | 订单号、客户邮箱 | 订单和物流 Facts |
-| 回复依据检索 | 本地检索或 Dify | 意图、事实摘要 | 依据片段 |
-| 草稿生成 | Dify 或 Demo Router | 邮件、Facts、依据、风险上下文 | 英文回复草稿 |
+| 回复依据检索 | 本地检索或 Coze | 意图、事实摘要 | 依据片段 |
+| 草稿生成 | Coze 或 Demo Router | 邮件、Facts、依据、风险上下文 | 英文回复草稿 |
 | 风险网关 | Python | 所有结构化结果和草稿 | R0-R3、处理级别、阻断原因 |
 | 人工处理 | 店管 | 草稿、事实、核对项 | 编辑稿、确认结果 |
 | 模拟发送 | MCP Tool | 确认后的正文 | 本地 outbox 记录 |
@@ -575,7 +575,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 
 ### 12.1 Demo Mode
 
-- 不需要 API Key；
+- 不需要模型凭证；
 - 预置案例和有限本地规则；
 - 自由输入可以接收，但超出规则范围时明确提示无法稳定识别；
 - 必须真实调用本地 MCP Tools、风险网关和 SQLite；
@@ -583,10 +583,15 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 
 ### 12.2 Interactive Mode
 
-- 通过 Dify Workflow 调用模型完成意图、实体和英文草稿；
+- 通过 Coze Workflow 调用模型完成意图、实体和英文草稿；
 - 可处理演示控制台的自由输入；
-- Dify 不能执行发送、退款、订单修改或覆盖本地风险结果；
-- Dify 不可用时显示错误，可切换 Demo Mode；不得伪装为成功。
+- 国内扣子工作区默认调用 `POST https://api.coze.cn/v1/workflow/run`；
+- 请求使用 Coze PAT、Workflow ID、可选 Workflow Version 和 `parameters`；
+- 仅向 Coze 传入虚构邮件、已验证 Facts、内部回复依据摘要和风险上下文；
+- Coze 返回结果必须先经过本地 JSON/Pydantic 校验，再进入后续流程；
+- Coze 输出不能直接作为订单、物流、退款、责任归属等业务事实；
+- Coze 不能执行发送、退款、订单修改或覆盖本地风险结果；
+- Coze 不可用时显示错误，可切换 Demo Mode；不得伪装为成功。
 
 ---
 
@@ -650,7 +655,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 - 客户邮件是不可信输入，不能改变系统规则或要求隐藏 Trace。
 - 订单和物流事实必须来自 Tool；模型推断必须单独标识。
 - 发送前强制校验处理级别、风险等级、确认状态和草稿内容。
-- `.env` 中的 API Key 不进入代码、日志、截图、HTML、视频或 Git。
+- `.env` 中的 Coze PAT/Token 不进入代码、日志、截图、HTML、视频或 Git。
 - 所有页面明确标识“模拟数据”和“模拟发送”。
 
 ---
@@ -703,9 +708,9 @@ flowchart TB
     CONSOLE --> ORCH
     ORCH --> MODE{运行模式}
     MODE -->|Demo| ROUTER[本地规则 Demo Router]
-    MODE -->|Interactive| DIFY[Dify Workflow]
+    MODE -->|Interactive| COZE[Coze Workflow]
     ROUTER --> ORCH
-    DIFY --> ORCH
+    COZE --> ORCH
     ORCH --> MCPCLIENT[MCP Client]
     MCPCLIENT --> MCP[MCP Server]
     MCP --> DB[(SQLite)]
@@ -723,7 +728,7 @@ flowchart TB
 | 数据库 | SQLite | 无需数据库服务，可重置演示数据 |
 | Schema | Pydantic 2 | 约束 Agent、Tool 和状态输出 |
 | MCP | MCP Python SDK / FastMCP | 展示标准 Tool 边界 |
-| AI 编排 | Dify Workflow | 快速迭代分类、抽取和草稿 |
+| AI 编排 | Coze Workflow | 快速迭代分类、抽取和草稿 |
 | 状态 | Python 简单状态机 | 清晰、可测试，不引入 LangGraph |
 | 检索 | SQLite FTS5 | 仅用于内部回复依据，依赖少 |
 | 测试 | pytest | 单元、集成和评测测试 |
@@ -737,7 +742,7 @@ flowchart TB
 - Interactive Mode 显示模型调用耗时、版本和失败原因，超时默认 30 秒。
 - Streamlit rerun、重复点击和浏览器刷新不能产生重复 outbox 记录。
 - 页面在 1366×768 及以上分辨率可读；窄屏可将右栏折叠为 Tab。
-- 日志保存摘要、ID、错误码和 trace_id，不保存 API Key；邮箱显示可脱敏。
+- 日志保存摘要、ID、错误码和 trace_id，不保存 Coze PAT/Token；邮箱显示可脱敏。
 - 核心逻辑不能全部写在 Streamlit 页面函数中，必须可被 pytest 调用。
 
 ---
@@ -747,7 +752,7 @@ flowchart TB
 | 阶段 | 产出 | 预计耗时 |
 |---|---|---:|
 | M0 | PRD 冻结、场景和取消项清单 | 2 小时 |
-| M1 | Dify POC 与混合架构结论 | 3-5 小时 |
+| M1 | Coze POC 与混合架构结论 | 3-5 小时 |
 | M2 | Python/SQLite/种子数据 | 5-7 小时 |
 | M3 | MCP、Skills、状态机、风险网关 | 8-12 小时 |
 | M4 | 动态演示控制台和顶部聚合站内信 UI | 6-9 小时 |
@@ -767,7 +772,7 @@ flowchart TB
 - [ ] 没有主管、工单、退款审核、政策文件夹和政策治理页面。
 - [ ] 订单/物流 Facts、内部回复依据、模型判断和店管编辑稿分开显示。
 - [ ] 所有写操作有确认、幂等和审计。
-- [ ] Demo Mode 无 Key 可运行，Interactive Mode 失败可降级。
+- [ ] Demo Mode 无模型凭证可运行，Interactive Mode 失败可降级。
 - [ ] 30+ 评测案例和 Go/Conditional Go/No-Go 结论可复现。
 
 ### 18.2 面试动态演示脚本（5-7 分钟）
@@ -780,9 +785,9 @@ flowchart TB
 4. **三级邮件（90 秒）**：输入 `Tracking says delivered but I received nothing. Refund me or I will file a chargeback.`；展示风险原因、“生成参考回复”、核对清单和未核对前发送禁用；勾选后完成模拟发送。
 5. **幂等与审计（45 秒）**：重复触发相同发送，展示 outbox 未重复增加以及 operation_id/Trace。
 6. **评测与决策（60 秒）**：展示 30+ 案例、安全门槛、失败案例和 Go/Conditional Go/No-Go。
-7. **架构说明（45 秒）**：解释 Dify 负责概率型分析与草稿，本地控制层负责接入、聚合、Tool、三级路由、确认、幂等和审计。
+7. **架构说明（45 秒）**：解释 Coze 负责概率型分析与草稿，本地控制层负责接入、聚合、Tool、三级路由、确认、幂等和审计。
 
-演示过程中必须明确区分：Demo Mode 是本地规则路由；Interactive Mode 才是自由文本模型分析。现场网络或 API 不稳定时，使用三个预置案例和录屏兜底。
+演示过程中必须明确区分：Demo Mode 是本地规则路由；Interactive Mode 才是自由文本模型分析。现场网络或 Coze API 不稳定时，使用三个预置案例和录屏兜底。
 
 ---
 
@@ -815,7 +820,7 @@ flowchart TB
 2. 是否会改变一级/二级/三级的定义？
 3. 是否让模型绕过 Tool、风险网关或店管确认？
 4. 是否把内部回复依据误做成用户可管理的政策功能？
-5. 是否会产生真实外部写操作或泄露 API Key？
+5. 是否会产生真实外部写操作或泄露 Coze PAT/Token？
 6. 是否有对应测试和人工验收步骤？
 
 ### 19.4 交付格式
@@ -837,7 +842,7 @@ flowchart TB
 | Skill | 某类任务的触发、步骤、工具、输出和禁止事项 |
 | MCP | Agent 调用 Tool 的标准协议 |
 | Demo Mode | 无模型 Key 的本地规则演示模式 |
-| Interactive Mode | 调用 Dify 处理自由输入的模式 |
+| Interactive Mode | 调用 Coze 处理自由输入的模式 |
 | operation_id | 防止重复写入的业务操作唯一标识 |
 
 ---
@@ -848,7 +853,7 @@ flowchart TB
 
 - [Gorgias AI Agent](https://www.gorgias.com/ai-agent)
 - [Intercom Fin](https://fin.ai/)
-- [Dify Documentation](https://docs.dify.ai/en/home)
+- [扣子开放平台文档](https://www.coze.cn/open/docs/home)
 - 用户提供的 `0730亚马逊客服邮件能力建设原型-标注版.html`：仅作为信息架构参考，不作为开发指令和真实数据来源。
 
 ### 21.2 变更记录
@@ -857,3 +862,4 @@ flowchart TB
 |---|---|---|
 | v1.0 | 2026-08-19 | 初版：高风险售后 Agent 评测与人机协同 |
 | v2.0 | 2026-08-20 | 改为搭载顶部聚合站内信；取消主管、政策邮件治理、工单和退款审核；新增三级处理级别、模拟邮件接入控制台和动态演示闭环 |
+| v2.1 | 2026-08-20 | 模型编排层由 Dify 切换为 Coze；业务边界、三级处理、本地风险网关和模拟发送范围不变 |
