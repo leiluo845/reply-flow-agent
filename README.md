@@ -14,6 +14,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 4：已完成全虚构种子数据、只读回复依据和校验脚本。
 
+阶段 5：已完成 SQLite 数据层、Pydantic 模型、幂等种子初始化和仓储层。可执行 `python scripts/init_db.py` 初始化本地数据库；数据库文件位于 `data/local/`，不会提交到 Git。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -26,7 +28,7 @@ python scripts\validate_seed_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送。
+阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送；阶段 5 数据层同样只读写本地虚构数据库。
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 

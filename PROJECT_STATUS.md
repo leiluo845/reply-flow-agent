@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 4——虚构种子数据和只读回复依据已完成；准备进入阶段 5
+阶段 5——SQLite 数据层和聚合模型已完成；准备进入阶段 6
 
 ## 已完成
 
@@ -56,15 +56,21 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `scripts/validate_seed_data.py`
   - `src/replyflow/seed_validation.py`
   - `tests/test_seed_data.py`
+- 已完成阶段 5 SQLite 数据层和聚合模型：
+  - `src/replyflow/models.py`：Pydantic 数据模型
+  - `src/replyflow/db.py`：幂等建表、事务封装和种子初始化
+  - `src/replyflow/repositories.py`：邮件、订单/物流、聚合会话、幂等和发件箱仓储
+  - `scripts/init_db.py`：可重复执行的本地数据库初始化命令
+  - `tests/test_db.py`、`tests/test_repositories.py`：表结构、种子幂等、事务回滚、聚合查询和 operation_id 测试
 
 ## 本轮修改
 
-- 新增 30 封虚构英文邮件、20 个虚构订单、52 条物流轨迹、3 条工具失败模拟、4 份只读回复依据和 30 条评测清单。
-- 新增 `scripts/validate_seed_data.py` 和 `src/replyflow/seed_validation.py`，验证 ID 关联、场景分布、风险分布、时间金额逻辑、回复依据结构和运行数据不含 `expected_*` 答案字段。
-- 新增 `tests/test_seed_data.py`，覆盖数据完整性、运行数据与评测答案隔离、回复依据结构和命令行校验脚本。
-- 调整 `src/replyflow/__init__.py`，避免包初始化时加载配置依赖，使 `python scripts/validate_seed_data.py` 可在普通 Python 命令下运行。
-- 更新 `README.md`、`START_HERE.md` 和本状态文件。
-- 未创建邮件接入、SQLite 表、MCP Tools、Agent 状态机或 Coze API 调用。
+- 新增 14 张 SQLite 表，覆盖邮件、聚合会话、订单、物流、回复依据、草稿、outbox、运行、Tool Trace、风险、确认、审计、幂等和评测结果。
+- 新增 `scripts/init_db.py`；默认从虚构种子数据重建基础表，重复执行不会重复插入。
+- 新增 `transaction()` 事务封装，异常时回滚本轮全部写入。
+- 新增仓储层，提供原始邮件幂等接入、订单/物流查询、聚合会话查询与状态更新、operation_id 重放/冲突判断和 outbox 查询。
+- 新增 Pydantic 模型，统一数据库边界数据结构。
+- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段5已完成和阶段6入口。
 
 ## 测试结果
 
@@ -87,27 +93,29 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pip install -e .`
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，9 passed。
+- 结果：通过，18 passed。
 - 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
 - 结果：通过，输出 `imports ok 0.3.0`。
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
 - 结果：通过，Streamlit 启动并输出 `Local URL: http://localhost:8506`；验证后已停止进程。
 - 命令：`python scripts/validate_seed_data.py`
 - 结果：通过，`Seed data validation passed.`，emails=30、orders=20、shipping_events=52、basis_docs=4、cases=30、r2_cases=13。
+- 命令：`.venv\\Scripts\\python.exe scripts\\init_db.py --db data\\local\\stage5_smoke.sqlite3`（连续执行两次）
+- 结果：通过，两次均输出 emails=30、orders=20、shipping_events=52、reply_basis=16；数据库文件被 `.gitignore` 忽略。
 
 ## 已知问题
 
 - 当前 Codex/PowerShell 环境未在扣子工作台创建 Workflow；实际运行可由用户在浏览器登录后完成，也可以后置到阶段 11 前后。
 - 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
 - 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 4 只完成虚构数据和只读依据；真实邮件接入、数据库和 Agent 处理从阶段 5 以后逐步实现。
+- 阶段 5 只完成本地数据层；真实邮件接入、MCP Tools、Agent 处理和页面仍未实现。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 继续阶段 5：实现 SQLite 数据层和聚合模型。
-- 阶段 5 不需要登录 Coze，不连接真实 Amazon、邮箱、订单或物流接口。
+- 继续阶段 6：实现模拟邮件接入和顶部聚合站内信会话创建。
+- 阶段 6 复用本阶段的 `EmailRepository` 和 `ThreadRepository`，接入流程只写本地 SQLite。
 - Coze 登录、真实 Workflow 创建、8 条运行记录和 API 联调继续后置到阶段 11 前后；在真实记录完成前不得声称 Coze POC 已通过。
 
 ## 最后更新时间
