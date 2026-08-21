@@ -94,7 +94,7 @@ class OutboxMessage(ReplyFlowModel):
 
 class TaskRun(ReplyFlowModel):
     task_id: str
-    thread_id: str
+    thread_id: str | None = None
     mode: str
     state: str
     skill_versions: dict[str, str] = Field(default_factory=dict)

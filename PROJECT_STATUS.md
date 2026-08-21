@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 6——模拟邮件接入和顶部聚合已完成；准备进入阶段 7
+阶段 7——8 个 MCP Tools 已完成；准备进入阶段 8
 
 ## 已完成
 
@@ -66,16 +66,20 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `src/replyflow/ingestion.py`：正文校验、虚构默认值、接入状态流转和 source_message_id 幂等
   - `src/replyflow/aggregation.py`：买家消息边界识别、聚合会话创建、顶部会话查询和计数
   - `tests/test_ingestion.py`、`tests/test_aggregation.py`：买家、非买家、空正文、默认值、订单上下文和重复接入测试
+- 已完成阶段 7 MCP Tools：
+  - `src/replyflow/mcp_tools.py`：8 个带 Pydantic 输入/输出、错误码、Trace 和幂等控制的 Tool
+  - `src/replyflow/mcp_server.py`：FastMCP 注册入口，注册数量严格为 8 个
+  - 扩展 `src/replyflow/repositories.py`：依据、草稿、outbox、运行、Trace 和审计仓储
+  - `tests/test_mcp_tools.py`：Tool 列表、事实查询、无结果、输入错误、确认门槛、重复执行、冲突和 outbox 测试
 
 ## 本轮修改
 
-- 新增 14 张 SQLite 表，覆盖邮件、聚合会话、订单、物流、回复依据、草稿、outbox、运行、Tool Trace、风险、确认、审计、幂等和评测结果。
-- 新增 `scripts/init_db.py`；默认从虚构种子数据重建基础表，重复执行不会重复插入。
-- 新增 `transaction()` 事务封装，异常时回滚本轮全部写入。
-- 新增仓储层，提供原始邮件幂等接入、订单/物流查询、聚合会话查询与状态更新、operation_id 重放/冲突判断和 outbox 查询。
-- 新增 Pydantic 模型，统一数据库边界数据结构。
-- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段6已完成和阶段7入口。
-- 本阶段未实现 Agent 分析、AI 回复、MCP Tools、页面或真实邮件同步。
+- 新增 8 个 FastMCP Tools：模拟邮件接入、邮件/订单/物流查询、只读回复依据/语气查询、草稿保存和本地模拟发送。
+- 写入 Tool 在 Tool 层强制 `confirmed=true`，并以 `operation_id` 返回重放结果或阻断内容冲突；模拟发送只写本地 outbox。
+- 每次 Tool 调用均写入 task run 和 Tool Trace；Trace 会脱敏正文、草稿和邮箱标识，只保留必要摘要。
+- 新增草稿和模拟发送的审计记录；不增加主管、工单、退款审核、政策管理或任何真实外部写操作。
+- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段7已完成和阶段8入口。
+- 本阶段仍未实现 Agent 分析、AI 回复、Skills、风险网关或页面；MCP Tools 只操作本地虚构 SQLite。
 
 ## 测试结果
 
@@ -98,7 +102,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pip install -e .`
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，26 passed。
+- 结果：通过，30 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
 - 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
 - 结果：通过，输出 `imports ok 0.3.0`。
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
@@ -107,20 +111,22 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：通过，`Seed data validation passed.`，emails=30、orders=20、shipping_events=52、basis_docs=4、cases=30、r2_cases=13。
 - 命令：`.venv\\Scripts\\python.exe scripts\\init_db.py --db data\\local\\stage5_smoke.sqlite3`（连续执行两次）
 - 结果：通过，两次均输出 emails=30、orders=20、shipping_events=52、reply_basis=16；数据库文件被 `.gitignore` 忽略。
+- 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_mcp_tools.py -q`
+- 结果：通过，4 passed；FastMCP 列表恰好为 `ingest_simulated_email`、`get_email`、`find_order`、`get_shipping_status`、`search_reply_basis`、`get_reply_tone`、`save_reply_draft`、`send_simulated_reply`。
 
 ## 已知问题
 
 - 当前 Codex/PowerShell 环境未在扣子工作台创建 Workflow；实际运行可由用户在浏览器登录后完成，也可以后置到阶段 11 前后。
 - 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
 - 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 6 只完成本地模拟接入和聚合；MCP Tools、Agent 处理和页面仍未实现。
+- 阶段 7 的 Tool 层已完成，但还没有接入 Agent 状态机、Skills、风险网关或 Streamlit 页面。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 继续阶段 7：实现 8 个 MCP Tools；仍只写本地 SQLite，不需要登录 Coze。
-- 阶段 7 复用本阶段的接入、聚合和仓储逻辑，Tool 层必须保持确认、幂等和真实外部写入隔离。
+- 继续阶段 8：实现 3 个可版本化 Skills 和本地只读回复依据检索封装；不需要登录 Coze。
+- 阶段 8 复用本阶段的 8 个 Tool 名称，Skill 只能引用已存在的 Tool，不创建政策管理功能。
 - Coze 登录、真实 Workflow 创建、8 条运行记录和 API 联调继续后置到阶段 11 前后；在真实记录完成前不得声称 Coze POC 已通过。
 
 ## 最后更新时间

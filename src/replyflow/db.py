@@ -6,7 +6,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Iterator, TypeVar
+from typing import Iterator
 
 from .models import (
     EmailRecord,
@@ -15,9 +15,6 @@ from .models import (
     ShippingEvent,
 )
 from .seed_validation import REPLY_BASIS_DIR, SEED_DIR, load_json, load_reply_basis_docs
-
-T = TypeVar("T")
-
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS emails (
@@ -110,7 +107,7 @@ CREATE TABLE IF NOT EXISTS outbox (
 
 CREATE TABLE IF NOT EXISTS task_runs (
     task_id TEXT PRIMARY KEY,
-    thread_id TEXT NOT NULL REFERENCES aggregate_threads(thread_id),
+    thread_id TEXT REFERENCES aggregate_threads(thread_id),
     mode TEXT NOT NULL,
     state TEXT NOT NULL,
     skill_versions_json TEXT NOT NULL DEFAULT '{}',
@@ -200,15 +197,19 @@ def initialize_schema(connection: sqlite3.Connection) -> None:
 
 @contextmanager
 def transaction(connection: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
-    """Run a callback-friendly transaction and roll back all writes on error."""
+    """Run a callback-friendly transaction and roll back all owned writes on error."""
+    owns_transaction = not connection.in_transaction
     try:
-        connection.execute("BEGIN")
+        if owns_transaction:
+            connection.execute("BEGIN")
         yield connection
     except Exception:
-        connection.rollback()
+        if owns_transaction:
+            connection.rollback()
         raise
     else:
-        connection.commit()
+        if owns_transaction:
+            connection.commit()
 
 
 def _json(value: object) -> str:
@@ -288,10 +289,10 @@ def seed_database(
                 ),
             )
         basis_titles = {
-            "logistics": ("Logistics reply basis", "logistics"),
-            "returns_exchange": ("Returns and exchange reply basis", "returns_exchange"),
-            "damage_refund": ("Damage and refund reply basis", "damage_refund"),
-            "tone": ("Reply tone basis", "tone"),
+            "logistics_basis": ("Logistics reply basis", "logistics"),
+            "returns_exchange_basis": ("Returns and exchange reply basis", "returns_exchange"),
+            "damage_refund_basis": ("Damage and refund reply basis", "damage_refund"),
+            "tone_basis": ("Reply tone basis", "tone"),
         }
         for doc in basis_docs:
             title, basis_type = basis_titles.get(doc.path.stem, (doc.path.stem, doc.path.stem))

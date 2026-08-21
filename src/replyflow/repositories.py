@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from .db import payload_hash, utc_now
-from .models import AggregateThread, EmailRecord, OrderRecord, ShippingEvent
+from .models import AggregateThread, AuditLog, EmailRecord, OutboxMessage, ReplyDraft, TaskRun, ToolTrace
 
 
 def _iso(value: datetime) -> str:
@@ -162,19 +162,28 @@ class IdempotencyRepository:
     def __init__(self, connection: sqlite3.Connection):
         self.connection = connection
 
-    def reserve(self, operation_id: str, action: str, payload: object, *, result_ref: str | None = None) -> str:
+    def reserve(
+        self,
+        operation_id: str,
+        action: str,
+        payload: object,
+        *,
+        result_ref: str | None = None,
+        commit: bool = True,
+    ) -> str:
         digest = payload_hash(payload)
         row = self.connection.execute(
-            "SELECT payload_hash FROM idempotency_keys WHERE operation_id = ?", (operation_id,)
+            "SELECT action, payload_hash FROM idempotency_keys WHERE operation_id = ?", (operation_id,)
         ).fetchone()
         if row:
-            return "REPLAY" if row[0] == digest else "IDEMPOTENCY_CONFLICT"
+            return "REPLAY" if row[0] == action and row[1] == digest else "IDEMPOTENCY_CONFLICT"
         self.connection.execute(
             """INSERT INTO idempotency_keys(operation_id, action, payload_hash, result_ref, created_at)
             VALUES (?, ?, ?, ?, ?)""",
             (operation_id, action, digest, result_ref, utc_now()),
         )
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         return "NEW"
 
     def get(self, operation_id: str) -> dict[str, Any] | None:
@@ -190,3 +199,165 @@ class OutboxRepository:
 
     def list_recent(self) -> list[dict[str, Any]]:
         return [dict(row) for row in self.connection.execute("SELECT * FROM outbox ORDER BY simulated_sent_at DESC").fetchall()]
+
+    def get_by_operation_id(self, operation_id: str) -> dict[str, Any] | None:
+        return _row_dict(
+            self.connection.execute("SELECT * FROM outbox WHERE operation_id = ?", (operation_id,)).fetchone()
+        )
+
+    def create(self, message: OutboxMessage, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO outbox
+            (outbox_id, thread_id, recipient, subject, body, simulated_sent_at, operation_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                message.outbox_id,
+                message.thread_id,
+                message.recipient,
+                message.subject,
+                message.body,
+                _iso(message.simulated_sent_at),
+                message.operation_id,
+            ),
+        )
+        if commit:
+            self.connection.commit()
+
+
+class ReplyDraftRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def get(self, draft_id: str) -> dict[str, Any] | None:
+        return _row_dict(self.connection.execute("SELECT * FROM reply_drafts WHERE draft_id = ?", (draft_id,)).fetchone())
+
+    def create(self, draft: ReplyDraft, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO reply_drafts
+            (draft_id, thread_id, agent_content, edited_content, ai_level, risk_level, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                draft.draft_id,
+                draft.thread_id,
+                draft.agent_content,
+                draft.edited_content,
+                draft.ai_level,
+                draft.risk_level,
+                _iso(draft.created_at),
+                _iso(draft.updated_at),
+            ),
+        )
+        if commit:
+            self.connection.commit()
+
+
+class ReplyBasisRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def search(self, query: str, *, limit: int = 5) -> list[dict[str, Any]]:
+        keywords = [word.lower() for word in query.split() if len(word) >= 3]
+        if not keywords:
+            return []
+        conditions = " OR ".join(
+            "LOWER(content) LIKE ? OR LOWER(section_id) LIKE ? OR LOWER(basis_type) LIKE ?" for _ in keywords
+        )
+        params: list[str | int] = []
+        for word in keywords:
+            pattern = f"%{word}%"
+            params.extend([pattern, pattern, pattern])
+        params.append(limit)
+        rows = self.connection.execute(
+            f"""SELECT basis_id, title, basis_type, section_id, content, version
+            FROM reply_basis WHERE active = 1 AND ({conditions})
+            ORDER BY basis_type, basis_id, section_id LIMIT ?""",
+            params,
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def get_tone(self) -> list[dict[str, Any]]:
+        rows = self.connection.execute(
+            """SELECT basis_id, title, basis_type, section_id, content, version
+            FROM reply_basis WHERE active = 1 AND basis_type = 'tone' ORDER BY section_id"""
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+
+class TaskRunRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def create(self, run: TaskRun, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO task_runs
+            (task_id, thread_id, mode, state, skill_versions_json, workflow_version, started_at, ended_at, error_code)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                run.task_id,
+                run.thread_id,
+                run.mode,
+                run.state,
+                json.dumps(run.skill_versions, ensure_ascii=False),
+                run.workflow_version,
+                _iso(run.started_at),
+                _iso(run.ended_at) if run.ended_at else None,
+                run.error_code,
+            ),
+        )
+        if commit:
+            self.connection.commit()
+
+    def complete(self, task_id: str, *, state: str, error_code: str | None = None, commit: bool = True) -> None:
+        self.connection.execute(
+            "UPDATE task_runs SET state = ?, ended_at = ?, error_code = ? WHERE task_id = ?",
+            (state, utc_now(), error_code, task_id),
+        )
+        if commit:
+            self.connection.commit()
+
+
+class ToolTraceRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def create(self, trace: ToolTrace, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO tool_traces
+            (trace_id, task_id, tool_name, input_summary, output_summary, status, duration_ms, error_code, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                trace.trace_id,
+                trace.task_id,
+                trace.tool_name,
+                trace.input_summary,
+                trace.output_summary,
+                trace.status,
+                trace.duration_ms,
+                trace.error_code,
+                _iso(trace.created_at),
+            ),
+        )
+        if commit:
+            self.connection.commit()
+
+
+class AuditLogRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def create(self, log: AuditLog, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO audit_logs
+            (audit_id, task_id, action, before_summary, after_summary, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                log.audit_id,
+                log.task_id,
+                log.action,
+                log.before_summary,
+                log.after_summary,
+                _iso(log.created_at),
+            ),
+        )
+        if commit:
+            self.connection.commit()
