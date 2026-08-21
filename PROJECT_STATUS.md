@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 5——SQLite 数据层和聚合模型已完成；准备进入阶段 6
+阶段 6——模拟邮件接入和顶部聚合已完成；准备进入阶段 7
 
 ## 已完成
 
@@ -62,6 +62,10 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `src/replyflow/repositories.py`：邮件、订单/物流、聚合会话、幂等和发件箱仓储
   - `scripts/init_db.py`：可重复执行的本地数据库初始化命令
   - `tests/test_db.py`、`tests/test_repositories.py`：表结构、种子幂等、事务回滚、聚合查询和 operation_id 测试
+- 已完成阶段 6 模拟邮件接入和聚合：
+  - `src/replyflow/ingestion.py`：正文校验、虚构默认值、接入状态流转和 source_message_id 幂等
+  - `src/replyflow/aggregation.py`：买家消息边界识别、聚合会话创建、顶部会话查询和计数
+  - `tests/test_ingestion.py`、`tests/test_aggregation.py`：买家、非买家、空正文、默认值、订单上下文和重复接入测试
 
 ## 本轮修改
 
@@ -70,7 +74,8 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 新增 `transaction()` 事务封装，异常时回滚本轮全部写入。
 - 新增仓储层，提供原始邮件幂等接入、订单/物流查询、聚合会话查询与状态更新、operation_id 重放/冲突判断和 outbox 查询。
 - 新增 Pydantic 模型，统一数据库边界数据结构。
-- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段5已完成和阶段6入口。
+- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段6已完成和阶段7入口。
+- 本阶段未实现 Agent 分析、AI 回复、MCP Tools、页面或真实邮件同步。
 
 ## 测试结果
 
@@ -93,7 +98,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pip install -e .`
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，18 passed。
+- 结果：通过，26 passed。
 - 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
 - 结果：通过，输出 `imports ok 0.3.0`。
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
@@ -108,14 +113,14 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 当前 Codex/PowerShell 环境未在扣子工作台创建 Workflow；实际运行可由用户在浏览器登录后完成，也可以后置到阶段 11 前后。
 - 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
 - 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 5 只完成本地数据层；真实邮件接入、MCP Tools、Agent 处理和页面仍未实现。
+- 阶段 6 只完成本地模拟接入和聚合；MCP Tools、Agent 处理和页面仍未实现。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 继续阶段 6：实现模拟邮件接入和顶部聚合站内信会话创建。
-- 阶段 6 复用本阶段的 `EmailRepository` 和 `ThreadRepository`，接入流程只写本地 SQLite。
+- 继续阶段 7：实现 8 个 MCP Tools；仍只写本地 SQLite，不需要登录 Coze。
+- 阶段 7 复用本阶段的接入、聚合和仓储逻辑，Tool 层必须保持确认、幂等和真实外部写入隔离。
 - Coze 登录、真实 Workflow 创建、8 条运行记录和 API 联调继续后置到阶段 11 前后；在真实记录完成前不得声称 Coze POC 已通过。
 
 ## 最后更新时间
