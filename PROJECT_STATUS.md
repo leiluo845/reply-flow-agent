@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 7——8 个 MCP Tools 已完成；准备进入阶段 8
+阶段 8——Skills 和只读回复依据检索已完成；准备进入阶段 9
 
 ## 已完成
 
@@ -71,15 +71,19 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `src/replyflow/mcp_server.py`：FastMCP 注册入口，注册数量严格为 8 个
   - 扩展 `src/replyflow/repositories.py`：依据、草稿、outbox、运行、Trace 和审计仓储
   - `tests/test_mcp_tools.py`：Tool 列表、事实查询、无结果、输入错误、确认门槛、重复执行、冲突和 outbox 测试
+- 已完成阶段 8 Skills 和只读回复依据检索：
+  - `skills/email_triage.md`、`skills/reply_drafting.md`、`skills/risk_routing.md`：3 个可版本化 Skill
+  - `src/replyflow/skill_loader.py`：Skill 元数据、版本、重复名称和 Tool 引用校验
+  - `src/replyflow/reply_basis_search.py`：只读依据检索、评分、无命中和多版本冲突响应
+  - `tests/test_skills.py`、`tests/test_reply_basis.py`：Skill/依据的正常、缺失、错误 Tool、无命中和冲突测试
 
 ## 本轮修改
 
-- 新增 8 个 FastMCP Tools：模拟邮件接入、邮件/订单/物流查询、只读回复依据/语气查询、草稿保存和本地模拟发送。
-- 写入 Tool 在 Tool 层强制 `confirmed=true`，并以 `operation_id` 返回重放结果或阻断内容冲突；模拟发送只写本地 outbox。
-- 每次 Tool 调用均写入 task run 和 Tool Trace；Trace 会脱敏正文、草稿和邮箱标识，只保留必要摘要。
-- 新增草稿和模拟发送的审计记录；不增加主管、工单、退款审核、政策管理或任何真实外部写操作。
-- 更新 `README.md`、`START_HERE.md` 和本状态文件，明确阶段7已完成和阶段8入口。
-- 本阶段仍未实现 Agent 分析、AI 回复、Skills、风险网关或页面；MCP Tools 只操作本地虚构 SQLite。
+- 新增 `email_triage`、`reply_drafting`、`risk_routing` 三个 Skill，均定义触发/不触发、输入输出、步骤、可用 Tools、禁止事项、升级条件和示例。
+- 新增 Skill Loader：校验 JSON 元数据、MAJOR.MINOR 版本、重复 Skill 名和已注册 Tool 引用。
+- 新增只读依据检索：返回依据与章节 ID、原文片段、分数和版本；无命中返回 `NO_HIT`，同章节多版本冲突返回 `CONFLICT`。
+- MCP 的 `search_reply_basis` 已接入结构化检索；缺少依据返回 `BASIS_NOT_FOUND`，不会凭常识补全。
+- 未创建上传、编辑、发布、文件夹或管理页面；本阶段仍未实现 Agent 编排、风险网关或页面。
 
 ## 测试结果
 
@@ -102,7 +106,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pip install -e .`
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，30 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
+- 结果：通过，37 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
 - 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
 - 结果：通过，输出 `imports ok 0.3.0`。
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
@@ -113,20 +117,22 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：通过，两次均输出 emails=30、orders=20、shipping_events=52、reply_basis=16；数据库文件被 `.gitignore` 忽略。
 - 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_mcp_tools.py -q`
 - 结果：通过，4 passed；FastMCP 列表恰好为 `ingest_simulated_email`、`get_email`、`find_order`、`get_shipping_status`、`search_reply_basis`、`get_reply_tone`、`save_reply_draft`、`send_simulated_reply`。
+- 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_skills.py tests\\test_reply_basis.py -q`
+- 结果：通过，7 passed；覆盖 3 个 Skill、错误 Tool、缺版本、无命中和依据冲突。
 
 ## 已知问题
 
 - 当前 Codex/PowerShell 环境未在扣子工作台创建 Workflow；实际运行可由用户在浏览器登录后完成，也可以后置到阶段 11 前后。
 - 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
 - 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 7 的 Tool 层已完成，但还没有接入 Agent 状态机、Skills、风险网关或 Streamlit 页面。
+- 阶段 8 的 Skill/依据层已完成，但还没有接入 Agent 状态机、风险网关或 Streamlit 页面。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 继续阶段 8：实现 3 个可版本化 Skills 和本地只读回复依据检索封装；不需要登录 Coze。
-- 阶段 8 复用本阶段的 8 个 Tool 名称，Skill 只能引用已存在的 Tool，不创建政策管理功能。
+- 继续阶段 9：实现确定性风险网关和三级处理路由；不需要登录 Coze。
+- 阶段 9 必须复用本阶段的结构化依据结果和现有 Tools，不能让模型或草稿降低本地风险结论。
 - Coze 登录、真实 Workflow 创建、8 条运行记录和 API 联调继续后置到阶段 11 前后；在真实记录完成前不得声称 Coze POC 已通过。
 
 ## 最后更新时间

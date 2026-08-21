@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from .db import transaction
 from .ingestion import IngestionError, ingest_simulated_email
 from .models import AuditLog, OutboxMessage, ReplyDraft, TaskRun, ToolTrace
+from .reply_basis_search import search_reply_basis as ranked_search_reply_basis
 from .repositories import (
     AuditLogRepository,
     EmailRepository,
@@ -308,10 +309,10 @@ class ReplyFlowTools:
             return request
 
         def action(_: _TraceContext) -> dict[str, Any]:
-            rows = ReplyBasisRepository(self.connection).search(request.query, limit=request.limit)
-            if not rows:
-                raise ToolFailure("BASIS_NOT_FOUND", "No matching internal reply basis was found.")
-            return {"results": rows, "query": request.query}
+            response = ranked_search_reply_basis(self.connection, request.query, limit=request.limit)
+            if response.status == "NO_HIT":
+                raise ToolFailure("BASIS_NOT_FOUND", response.reason or "No matching internal reply basis was found.")
+            return response.model_dump()
 
         return _run(self.connection, "search_reply_basis", request.model_dump(), action)
 
