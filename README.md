@@ -28,6 +28,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 11：已完成 Coze Interactive 客户端、Interactive 编排本地代码、mock 测试和真实 Analyze/Draft API 联调。请求体使用开始节点要求的 `parameters.payload_json`；未知 intent 会被本地 Schema 阻断。
 
+阶段 12：已完成 Streamlit 动态工作台。运行 `streamlit run app.py` 后可在演示控制台输入虚构邮件，观察邮件接入、顶部聚合、AI 处理、L1/L2/L3 风险分级、草稿确认和本地模拟发件箱变化。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -40,7 +42,9 @@ python scripts\validate_seed_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-阶段 3 页面只是工作台骨架，不会产生真实发送；阶段 5 数据层只读写本地虚构数据库。Coze Workflow 与 POC 记录已完成，Interactive UI 仍待完成。
+阶段 3 页面只是工作台骨架，不会产生真实发送；阶段 5 数据层只读写本地虚构数据库。Coze Workflow、POC 记录和动态 UI 均已完成，页面发送仍只写入本地 outbox。
+
+当前页面地址：`http://localhost:8506`（本机启动 Streamlit 后）。所有发送都只写入 SQLite 本地模拟发件箱。
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 

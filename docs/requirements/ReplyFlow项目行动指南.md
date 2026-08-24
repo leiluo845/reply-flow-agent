@@ -590,6 +590,8 @@ python -m streamlit run app.py
 
 **完成定义**：面试官能看到真实动态流程，而不是静态展示或动画。
 
+**当前验收记录（2026-08-24）**：已完成 `app.py` 动态工作台和 `tests/test_ui_helpers.py`。浏览器访问 `http://localhost:8506` 已验证：一级自动回复并写入本地 outbox、二级出现可编辑草稿并需确认、三级未完成清单时发送按钮禁用、清单全选后可模拟发送、重复点击不增加 outbox。Interactive Mode 与 Demo Mode 共用页面，Coze 失败时不伪造草稿。
+
 **Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"; git push origin main`
 
 **常见失败**：Streamlit rerun 重复执行时，使用 session state + operation_id 修复，不能只把按钮隐藏。
