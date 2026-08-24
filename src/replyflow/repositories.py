@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from .db import payload_hash, utc_now
-from .models import AggregateThread, AuditLog, EmailRecord, OutboxMessage, ReplyDraft, TaskRun, ToolTrace
+from .models import AggregateThread, AuditLog, EmailRecord, OutboxMessage, ReplyDraft, RiskDecision, TaskRun, ToolTrace
 
 
 def _iso(value: datetime) -> str:
@@ -315,6 +315,11 @@ class TaskRunRepository:
         if commit:
             self.connection.commit()
 
+    def update_state(self, task_id: str, state: str, *, commit: bool = True) -> None:
+        self.connection.execute("UPDATE task_runs SET state = ? WHERE task_id = ?", (state, task_id))
+        if commit:
+            self.connection.commit()
+
 
 class ToolTraceRepository:
     def __init__(self, connection: sqlite3.Connection):
@@ -335,6 +340,29 @@ class ToolTraceRepository:
                 trace.duration_ms,
                 trace.error_code,
                 _iso(trace.created_at),
+            ),
+        )
+        if commit:
+            self.connection.commit()
+
+
+class RiskDecisionRepository:
+    def __init__(self, connection: sqlite3.Connection):
+        self.connection = connection
+
+    def create(self, decision: RiskDecision, *, commit: bool = True) -> None:
+        self.connection.execute(
+            """INSERT INTO risk_decisions
+            (decision_id, task_id, risk_level, ai_level, matched_rules_json, checklist_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                decision.decision_id,
+                decision.task_id,
+                decision.risk_level,
+                decision.ai_level,
+                json.dumps(decision.matched_rules, ensure_ascii=False),
+                json.dumps(decision.checklist, ensure_ascii=False),
+                _iso(decision.created_at),
             ),
         )
         if commit:

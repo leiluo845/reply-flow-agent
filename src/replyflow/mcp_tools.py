@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import datetime, timezone
+from functools import lru_cache
 from typing import Any, Callable
 from uuid import uuid4
 
@@ -24,6 +25,7 @@ from .repositories import (
     ThreadRepository,
     ToolTraceRepository,
 )
+from .seed_validation import SEED_DIR, load_json
 
 
 TOOL_NAMES = (
@@ -151,6 +153,21 @@ def _summary(value: object, *, limit: int = 500) -> str:
     return text[:limit]
 
 
+@lru_cache(maxsize=1)
+def _demo_tool_failures() -> tuple[dict[str, Any], ...]:
+    """Small, explicit fault set used only by the offline portfolio demo."""
+    return tuple(load_json(SEED_DIR / "tool_failures.json"))
+
+
+def _configured_failure(tool_name: str, order_id: str | None) -> ToolFailure | None:
+    if not order_id:
+        return None
+    for failure in _demo_tool_failures():
+        if failure.get("tool_name") == tool_name and failure.get("trigger_order_id") == order_id:
+            return ToolFailure(str(failure["error_code"]), str(failure["message"]))
+    return None
+
+
 class _TraceContext:
     def __init__(self, connection: sqlite3.Connection, tool_name: str, payload: object, thread_id: str | None = None):
         self.connection = connection
@@ -276,6 +293,9 @@ class ReplyFlowTools:
         def action(_: _TraceContext) -> dict[str, Any]:
             repository = OrderRepository(self.connection)
             if request.order_id:
+                configured_failure = _configured_failure("find_order", request.order_id.strip())
+                if configured_failure:
+                    raise configured_failure
                 row = repository.get(request.order_id.strip())
                 orders = [row] if row else []
             else:
@@ -293,6 +313,9 @@ class ReplyFlowTools:
 
         def action(_: _TraceContext) -> dict[str, Any]:
             repository = OrderRepository(self.connection)
+            configured_failure = _configured_failure("get_shipping_status", request.order_id)
+            if configured_failure:
+                raise configured_failure
             order = repository.get(request.order_id)
             if not order:
                 raise ToolFailure("ORDER_NOT_FOUND", f"Order not found: {request.order_id}")
