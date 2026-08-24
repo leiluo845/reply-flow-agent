@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 10——Demo Mode 状态机与有限规则编排已完成；准备进入阶段 11
+阶段 11——Coze Interactive 本地客户端与编排已完成；等待用户创建/发布真实 Workflow 后联调
 
 ## 已完成
 
@@ -85,6 +85,10 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `src/replyflow/orchestrator.py`：真实串联接入、8 个本地 Tool、Skill 版本、依据检索、风险网关、草稿和本地 outbox
   - `src/replyflow/audit.py`：状态变化审计
   - `tests/test_state_machine.py`、`tests/test_demo_orchestrator.py`：三类预置场景、重复接入、超范围输入、Tool 故障和非法状态测试
+- 已完成阶段 11 的本地代码部分：
+  - `src/replyflow/coze_client.py`：Coze Workflow HTTP 客户端、Analyze/Draft Schema、响应提取和错误码
+  - `src/replyflow/interactive_orchestrator.py`：Coze 分析/草稿与本地事实、依据、风险、确认和 outbox 的混合编排
+  - `tests/test_coze_client.py`、`tests/test_interactive_orchestrator.py`：未配置、请求构造、响应解析、401/403/429/超时/非 JSON/Schema 错误、L1/L3 和模型失败降级测试
 
 ## 本轮修改
 
@@ -92,7 +96,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 新增 Skill Loader：校验 JSON 元数据、MAJOR.MINOR 版本、重复 Skill 名和已注册 Tool 引用。
 - 新增只读依据检索：返回依据与章节 ID、原文片段、分数和版本；无命中返回 `NO_HIT`，同章节多版本冲突返回 `CONFLICT`。
 - MCP 的 `search_reply_basis` 已接入结构化检索；缺少依据返回 `BASIS_NOT_FOUND`，不会凭常识补全。
-- 未创建上传、编辑、发布、文件夹或管理页面；本阶段仍未实现 Streamlit 页面、Coze Interactive Mode 或真实外部接口。
+- 未创建上传、编辑、发布、文件夹或管理页面；真实 Coze Workflow 尚未创建，Interactive Mode 尚未进行联网运行；本地仍无真实外部写接口。
 
 ## 测试结果
 
@@ -115,7 +119,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pip install -e .`
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，66 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
+- 结果：通过，81 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
 - 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
 - 结果：通过，输出 `imports ok 0.3.0`。
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
@@ -132,20 +136,22 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：通过，21 passed；高风险召回、白名单边界、组合规则、草稿二次扫描和模型降级阻断均通过。
 - 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_state_machine.py tests\\test_demo_orchestrator.py -q`
 - 结果：通过，8 passed；物流 L1、缺订单号 L2、退款拒付 L3、超范围提示、Tool 故障升级、重复接入和非法状态均通过。
+- 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_coze_client.py tests\\test_interactive_orchestrator.py -q`
+- 结果：通过，15 passed；未配置 Coze 不发网络请求，mock 响应和错误均结构化处理，Interactive 业务控制仍由本地风险网关和 Tools 负责。
 
 ## 已知问题
 
 - 当前 Codex/PowerShell 环境未在扣子工作台创建 Workflow；实际运行可由用户在浏览器登录后完成，也可以后置到阶段 11 前后。
 - 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
 - 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 10 的 Demo Mode 已完成；当前还没有 Coze Interactive Mode 或 Streamlit 页面。
+- 阶段 11 本地代码已完成；真实 Coze 联调和 Streamlit 页面仍未完成。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 继续阶段 11：实现 Coze Interactive Mode 客户端和失败降级；需要用户后续在扣子工作台创建/发布 Workflow 时再登录。
-- 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责。
+- 下一步需要用户登录扣子并创建/发布 `ReplyFlow POC` Workflow，记录 Workflow ID 和可选版本；之后再在本机 `.env` 填入 PAT/ID，运行真实 8 条 POC 案例。
+- 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；在真实运行记录产生前，不得声称 Interactive POC 已通过。
 - Coze 登录、真实 Workflow 创建、8 条运行记录和 API 联调继续后置到阶段 11 前后；在真实记录完成前不得声称 Coze POC 已通过。
 
 ## 最后更新时间

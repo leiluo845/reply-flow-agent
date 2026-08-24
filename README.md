@@ -26,6 +26,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 10：已完成离线 Demo Mode。输入三类预置邮件会真实调用本地 Tools、Skill/依据层和风险网关，分别展示 L1 自动回复、L2 待确认、L3 高风险核对；无需 Coze 凭证。
 
+阶段 11：已完成 Coze Interactive 客户端和 Interactive 编排的本地代码与 mock 测试。真实联调前，需要在扣子创建并发布 `ReplyFlow POC` Workflow，再把 PAT、Workflow ID 和可选版本写入 `.env`；未配置时会明确失败并可回到 Demo Mode。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -38,7 +40,7 @@ python scripts\validate_seed_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送；阶段 5 数据层同样只读写本地虚构数据库。
+阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送；阶段 5 数据层同样只读写本地虚构数据库。当前 Interactive Mode 还未连接真实 Workflow。
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 
