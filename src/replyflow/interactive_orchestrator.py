@@ -94,7 +94,9 @@ class InteractiveOrchestrator:
             return InteractiveRunResult(email_id=data["email_id"], thread_status="NOT_BUYER_MESSAGE", trace_ids=trace_ids)
         thread_id = data["thread_id"]
         thread = ThreadRepository(self.connection).get(thread_id)
-        if data["duplicate"] and thread and thread["status"] != "WAITING_ANALYSIS":
+        # A failed Coze run is retryable. Other terminal states remain
+        # idempotent replays and must not create a second AI task.
+        if data["duplicate"] and thread and thread["status"] not in {"WAITING_ANALYSIS", "FAILED"}:
             return InteractiveRunResult(
                 email_id=data["email_id"],
                 thread_id=thread_id,

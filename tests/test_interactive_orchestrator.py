@@ -113,6 +113,44 @@ def test_interactive_model_error_marks_thread_failed_without_faking_result(tmp_p
         connection.close()
 
 
+def test_interactive_failed_run_can_retry_without_duplicate_email(tmp_path: Path) -> None:
+    failing_client = FakeInteractiveClient(error=CozeError("COZE_TIMEOUT", "Coze timed out", retryable=True))
+    connection, orchestrator = _orchestrator(tmp_path, failing_client)
+    try:
+        first = orchestrator.run(
+            body="Where is my order? Order number: ORD-1001.",
+            sender_email="buyer01@example.com",
+            source_message_id="SRC-INTERACTIVE-RETRY-001",
+        )
+        assert first.thread_status == "FAILED"
+
+        successful_client = FakeInteractiveClient()
+        orchestrator.client = successful_client
+        second = orchestrator.run(
+            body="Where is my order? Order number: ORD-1001.",
+            sender_email="buyer01@example.com",
+            source_message_id="SRC-INTERACTIVE-RETRY-001",
+        )
+
+        assert second.thread_status == "AI_REPLIED"
+        assert second.outbox_id is not None
+        assert connection.execute(
+            "SELECT COUNT(*) FROM emails WHERE source_message_id = ?",
+            ("SRC-INTERACTIVE-RETRY-001",),
+        ).fetchone()[0] == 1
+        assert connection.execute("SELECT COUNT(*) FROM outbox").fetchone()[0] == 1
+        assert connection.execute(
+            """SELECT COUNT(*) FROM task_runs
+               WHERE thread_id = (SELECT thread_id FROM aggregate_threads
+                                  WHERE email_id = (SELECT email_id FROM emails WHERE source_message_id = ?))
+                 AND mode = 'interactive'""",
+            ("SRC-INTERACTIVE-RETRY-001",),
+        ).fetchone()[0] == 2
+        assert len(successful_client.analyze_calls) == 1
+    finally:
+        connection.close()
+
+
 def test_interactive_model_can_classify_non_buyer_and_stops_reply_flow(tmp_path: Path) -> None:
     client = FakeInteractiveClient(is_buyer_message=False, intent="non_buyer_message")
     connection, orchestrator = _orchestrator(tmp_path, client)

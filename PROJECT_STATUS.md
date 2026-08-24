@@ -96,6 +96,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 已完成阶段 12 UI 幂等和纯函数测试：稳定 `source_message_id` 防重复接入，二级/三级发送按钮按状态和清单控制。
 - 已完成阶段 13 页面重构：以原 HTML 邮件工作台为骨架，复刻深色 OMS 导航、顶部工具栏占位、邮箱树、会话列表、邮件详情和订单侧栏；除智能客服开关、模拟邮件台和回复操作外，其余区域只做展示。
 - 已完成阶段 13 Agent 交互：关闭智能客服时模拟邮件只接收不调用 Coze；开启后自动调用 Coze，L1 自动回复、L2 草稿待确认、L3 高风险核对；Coze 失败直接显示 AI 处理失败，不回退 Demo Router。
+- 已补充 AI 失败重试：FAILED 会话显示“重试 AI”，开启智能客服后可重新调用 Coze；失败会话允许新 interactive task，但 source_message_id、邮件记录和 outbox 仍保持幂等。
 - 新增页面规范 `docs/ui_prototype_spec.md`，规定原 HTML 骨架、交互边界、风险标签、订单摘要和 Streamlit + CSS/局部 HTML 实现约束。
 
 ## 本轮修改
@@ -155,7 +156,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
 - 结果：通过，浏览器访问 `http://localhost:8506`；已验收一级自动回复、二级确认、三级核对、重复点击幂等和本地模拟发件箱计数变化。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，`87 passed`；阶段 13 页面重构后回归测试保持通过。
+- 结果：通过，`88 passed`；包含 Coze 失败重试且不重复创建邮件的回归测试。
 - 浏览器验收：桌面视口下原 HTML 邮件工作台骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败提示通过；关闭开关不调用 AI，开启后失败不回退本地规则。
 - 命令：使用本机 `.env` 调用 `CozeClient.analyze(...)`（虚构物流邮件）
 - 结果：通过，`is_buyer_message=true`、`intent=shipping_status`、`order_id=ORD-1001`、`confidence=1.0`。

@@ -960,6 +960,18 @@ def render_detail(connection: sqlite3.Connection, settings: AppSettings, mode: s
     draft = artifacts.get("draft")
     if thread.get("status") == "FAILED":
         st.error(f"AI 处理失败：{thread.get('status')}。Coze 未返回可用结果，未生成回复。")
+        if st.button(
+            "重试 AI",
+            key=f"retry_ai_v2_{thread_id}",
+            type="primary",
+            disabled=not agent_enabled,
+            help="重新调用 Coze；不会切换到本地规则或重复写入邮件",
+        ):
+            result_data = _ensure_thread_with_coze(connection, settings, thread_id)
+            st.session_state["flash_notice"] = result_data.get("notice") or ("AI 处理完成。" if not result_data.get("error_code") else "AI 处理失败。")
+            st.rerun()
+        if not agent_enabled:
+            st.caption("请先打开智能客服，再重试 AI。")
     elif not agent_enabled and thread.get("status") == "WAITING_ANALYSIS":
         st.info("智能客服已关闭；当前邮件不会调用 AI，也不会自动回复。")
     if draft:
