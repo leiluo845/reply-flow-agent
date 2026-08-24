@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 11——Coze Workflow 已创建并发布；已完成一次真实 Coze 试运行，等待本地 API 联调与 8 条案例评测
+阶段 11——Coze Workflow 已创建并发布；本地 Analyze/Draft API 联调已通过，等待 8 条案例评测与 Interactive UI
 
 ## 已完成
 
@@ -89,6 +89,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `src/replyflow/coze_client.py`：Coze Workflow HTTP 客户端、Analyze/Draft Schema、响应提取和错误码
   - `src/replyflow/interactive_orchestrator.py`：Coze 分析/草稿与本地事实、依据、风险、确认和 outbox 的混合编排
   - `tests/test_coze_client.py`、`tests/test_interactive_orchestrator.py`：未配置、请求构造、响应解析、401/403/429/超时/非 JSON/Schema 错误、L1/L3 和模型失败降级测试
+- 已完成阶段 11 本地真实 API 联调：`.env` 已由用户在本机配置，Analyze 与 Draft 均通过已发布 Workflow 返回结构化结果；修正请求体为 `parameters.payload_json`，与扣子开始节点契约一致。
 
 ## 本轮修改
 
@@ -139,21 +140,23 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_state_machine.py tests\\test_demo_orchestrator.py -q`
 - 结果：通过，8 passed；物流 L1、缺订单号 L2、退款拒付 L3、超范围提示、Tool 故障升级、重复接入和非法状态均通过。
 - 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_coze_client.py tests\\test_interactive_orchestrator.py -q`
-- 结果：通过，15 passed；未配置 Coze 不发网络请求，mock 响应和错误均结构化处理，Interactive 业务控制仍由本地风险网关和 Tools 负责。
+- 结果：通过，16 passed；未配置 Coze 不发网络请求，mock 响应和错误均结构化处理，Interactive 业务控制仍由本地风险网关和 Tools 负责。
+- 命令：使用本机 `.env` 调用 `CozeClient.analyze(...)`（虚构物流邮件）
+- 结果：通过，`is_buyer_message=true`、`intent=shipping_status`、`order_id=ORD-1001`、`confidence=1.0`。
+- 命令：使用本机 `.env` 调用 `CozeClient.draft(...)`（虚构订单与物流事实）
+- 结果：通过，返回 `draft_subject`、`draft_body`、`used_basis`、`uncertainties` 四个结构化字段；未执行外部发送。
 
 ## 已知问题
 
-- 尚未完成 8 条案例的完整 Coze 运行记录、人工评分和失败分析；当前仅完成 1 条真实试运行用于联通性验收。
-- 尚未产生阶段 2 必需的 8 条真实 Coze 运行记录；不得手工伪造 `poc_results.md`。
-- 需要用户在可联网浏览器登录/注册扣子后，才能产生真实 POC 运行记录；未登录期间可继续本地 Demo Mode。
-- 阶段 11 本地代码与 Coze 工作流创建/发布已完成；本地 API 联调和 Streamlit Interactive 页面仍待完成。
+- 尚未完成 8 条案例的完整 Coze 运行记录、Run ID、人工评分和失败分析；不得手工伪造 `poc_results.md`。
+- 阶段 11 的 Streamlit Interactive 页面仍待完成；当前真实 API 联调通过可作为 UI 接入前置验收。
 - Git 身份仅在本项目内配置为 GitHub 账号 `leiluo845`，不修改全局 Git 配置。
 - 当前电脑的 remote 使用 SSH deploy key 推送；换电脑时按 `docs/NEW_COMPUTER_SETUP.md` 重新登录或配置新 key。
 
 ## 下一步
 
-- 下一步在本机 `.env` 填入 Coze PAT（只由用户自己填写，不发送给 AI），使用已发布 Workflow ID `7677420616827928610` 完成本地 API 联调，再运行 8 条 POC 案例。
-- 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；在真实运行记录产生前，不得声称 Interactive POC 已通过。
+- 下一步运行并记录 8 条 POC 案例，再进入阶段 12 完成 Streamlit Interactive UI；`.env` 和 Coze PAT 继续只保留在本机。
+- 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；8 条案例评测完成前，不得声称完整 Interactive POC 已通过。
 - 8 条运行记录完成前，只能声称“Coze 连通性试运行通过”，不能声称完整 Coze POC 评测通过。
 
 ## 最后更新时间

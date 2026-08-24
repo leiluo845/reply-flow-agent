@@ -522,7 +522,7 @@ COZE_TIMEOUT_SECONDS=30
 **AI 提示词**：
 
 ```text
-实现coze_client.py：通过 `POST {COZE_API_BASE_URL}/workflow/run` 调用已发布 Workflow；请求使用 Bearer PAT、Workflow ID 和 parameters；Analyze 和 Draft 两次工作流调用；Pydantic 校验；处理401/403/429/超时/非JSON/Schema错误；不记录 Token。具体响应字段以实际 Coze OpenAPI 返回为准，不得凭空假设。
+实现coze_client.py：通过 `POST {COZE_API_BASE_URL}/workflow/run` 调用已发布 Workflow；请求使用 Bearer PAT、Workflow ID 和 parameters；本项目的开始节点只有 `payload_json`，因此必须将业务输入序列化为 JSON 字符串并放在 `parameters.payload_json` 中；Analyze 和 Draft 两次工作流调用；Pydantic 校验；处理401/403/429/超时/非JSON/Schema错误；不记录 Token。具体响应字段以实际 Coze OpenAPI 返回为准，不得凭空假设。
 Python必须在Analyze后调用本地Tools，再把verified_facts_json和reply_basis_json传给Draft。
 Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖risk_gateway。
 失败时明确提示并允许切Demo Mode，不静默伪造结果。
@@ -533,7 +533,7 @@ Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖r
 
 **验收**：未配置 Key 时不崩溃；配置 PAT 后自由输入可分析；Coze 请求不含 expected 答案和不必要数据；已发布工作流可用 `task_type=analyze` 真实试运行。
 
-**完成定义**：工作流已发布且至少一条真实输入通过；本地 API 联调和完整 8 条评测仍作为本阶段后续验收。
+**完成定义**：工作流已发布、至少一条真实输入通过，且本地 Analyze/Draft API 联调通过；完整 8 条评测仍作为本阶段后续验收。
 
 **Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Coze interactive mode"; git push origin main`
 

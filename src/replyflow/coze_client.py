@@ -137,9 +137,11 @@ class CozeClient:
             )
         payload: dict[str, Any] = {
             "workflow_id": self.settings.coze_workflow_id,
-            # Coze CN's current API expects start-node parameters as a
-            # JSON-serialized string, not a nested object.
-            "parameters": json.dumps({"task_type": task_type, **parameters}, ensure_ascii=False),
+            # The published workflow exposes one start input, payload_json.
+            # Coze expects each start input value to be a JSON-serialized string.
+            "parameters": {
+                "payload_json": json.dumps({"task_type": task_type, **parameters}, ensure_ascii=False),
+            },
         }
         headers = {
             "Authorization": f"Bearer {self.settings.coze_api_token.get_secret_value()}",

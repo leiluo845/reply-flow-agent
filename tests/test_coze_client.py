@@ -80,7 +80,7 @@ def test_analyze_parses_common_coze_output_wrapper_and_limits_inputs() -> None:
     assert call["url"] == "https://api.coze.cn/v1/workflow/run"
     assert call["headers"]["Authorization"] == "Bearer secret-token"
     assert call["json"]["workflow_id"] == "workflow-001"
-    parameters = json.loads(call["json"]["parameters"])
+    parameters = json.loads(call["json"]["parameters"]["payload_json"])
     assert len(parameters["subject"]) == 300
     assert len(parameters["body"]) == 8000
     assert parameters["task_type"] == "analyze"
@@ -107,7 +107,7 @@ def test_draft_parses_direct_output_and_does_not_add_control_actions() -> None:
 
     assert result.draft_subject == "Re: Delivery"
     assert "send" not in result.model_dump_json().lower()
-    assert json.loads(session.calls[0]["json"]["parameters"])["task_type"] == "draft"
+    assert json.loads(session.calls[0]["json"]["parameters"]["payload_json"])["task_type"] == "draft"
 
 
 def test_official_style_data_string_and_debug_url_are_supported() -> None:
