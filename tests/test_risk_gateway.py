@@ -103,6 +103,7 @@ def test_fact_and_tool_risks_route_to_level_three(overrides, rule: str) -> None:
         ("This is our fault and we accept responsibility.", "R2_DRAFT_RESPONSIBILITY_PROMISE"),
         ("Your parcel will arrive tomorrow.", "R2_DRAFT_EXACT_TIME_PROMISE"),
         ("We can refund $20.00 today.", "R2_DRAFT_AMOUNT_PROMISE"),
+        ("We cannot refund until verification, as required by our policies.", "R2_DRAFT_UNSUPPORTED_POLICY_ASSERTION"),
     ],
 )
 def test_draft_is_scanned_again_and_new_commitments_upgrade_risk(draft: str, rule: str) -> None:

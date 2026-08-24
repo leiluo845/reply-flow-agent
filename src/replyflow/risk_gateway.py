@@ -108,6 +108,11 @@ COMMITMENT_PATTERNS: dict[str, tuple[str, ...]] = {
         "will arrive by",
         "will be delivered by",
     ),
+    "R2_DRAFT_UNSUPPORTED_POLICY_ASSERTION": (
+        "as required by our policies",
+        "our policy requires",
+        "under our policy",
+    ),
 }
 
 R1_PATTERNS: dict[str, tuple[str, ...]] = {

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 import requests
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
@@ -26,9 +26,24 @@ class InteractiveModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+Intent = Literal[
+    "shipping_status",
+    "delivered_not_received",
+    "size_or_fit",
+    "return_or_exchange",
+    "damaged_item",
+    "refund_request",
+    "chargeback_threat",
+    "order_change",
+    "product_question",
+    "other_buyer_support",
+    "non_buyer_message",
+]
+
+
 class AnalyzeOutput(InteractiveModel):
     is_buyer_message: bool
-    intent: str
+    intent: Intent
     order_id: str | None = None
     missing_fields: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0, le=1)

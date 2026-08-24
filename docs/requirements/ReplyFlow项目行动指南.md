@@ -240,6 +240,8 @@ Draft 输入 email、verified_facts_json、reply_basis_json、risk_context_json�
 
 **完成定义**：有 8 条真实 POC 运行记录和失败分析，不只是流程图。
 
+**当前验收记录（2026-08-24）**：已完成 8 条真实案例运行并保存 Run ID；P01 首次超时后重试成功，P06 首次意图漂移后通过本地 11 值枚举校验并重跑成功，P05 留有依据外断言警告。详细结果见 `poc/coze/poc_results.md`、`poc_results.jsonl` 和 `poc_results_retry.jsonl`。因此可以进入 UI 开发，但不能把 P05 描述为“无缺陷通过”。
+
 **Git**：离线材料完成时提交 `docs: prepare Coze POC contract`；真实运行记录完成时再提交 `docs: validate Coze analysis and drafting POC`。两次提交都必须 `git push origin main`。
 
 **常见失败**：Coze 输出夹杂解释文字时，使用结构化输出或加强 JSON 约束；不要手工改结果冒充成功。

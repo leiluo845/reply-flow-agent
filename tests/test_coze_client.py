@@ -175,3 +175,20 @@ def test_schema_extra_fields_are_rejected() -> None:
         client.analyze(subject="Hi", body="Hello")
 
     assert error.value.code == "MODEL_OUTPUT_INVALID"
+
+
+def test_analyze_rejects_unknown_intent_enum() -> None:
+    session = FakeSession(
+        FakeResponse(
+            payload={
+                "code": 0,
+                "data": {"output": {"is_buyer_message": True, "intent": "other", "confidence": 0.8}},
+            }
+        )
+    )
+    client = CozeClient(configured_settings(), session=session)
+
+    with pytest.raises(CozeError) as error:
+        client.analyze(subject="Wrong item", body="Order RF-9999")
+
+    assert error.value.code == "MODEL_OUTPUT_INVALID"
