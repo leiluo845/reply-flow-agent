@@ -28,7 +28,7 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 11：已完成 Coze Interactive 客户端、Interactive 编排本地代码、mock 测试和真实 Analyze/Draft API 联调。请求体使用开始节点要求的 `parameters.payload_json`；未知 intent 会被本地 Schema 阻断。
 
-阶段 12：已完成 Streamlit 动态工作台。运行 `streamlit run app.py` 后可在演示控制台输入虚构邮件，观察邮件接入、顶部聚合、AI 处理、L1/L2/L3 风险分级、草稿确认和本地模拟发件箱变化。
+阶段 12：已完成 Streamlit 动态工作台。运行 `streamlit run app.py` 后点击右下角“模拟收到邮件”浮动按钮，在浮窗中输入虚构邮件并选择订单查看摘要，观察邮件接入、顶部聚合、AI 处理、L1/L2/L3 风险分级、草稿确认和本地模拟发件箱变化。
 
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
