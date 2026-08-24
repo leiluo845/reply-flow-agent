@@ -509,12 +509,12 @@ Demo Mode使用有限可解释规则，不调用模型；仍真实调用8个MCP 
 
 **目标**：支持演示控制台的自由输入。
 
-**配置**：
+**配置**：Coze 工作流已由用户在国内工作区创建并发布。固定 Workflow ID 为 `7677420616827928610`，当前版本为 `v0.0.1`。
 
 ```dotenv
 COZE_API_BASE_URL=https://api.coze.cn/v1
 COZE_API_TOKEN=
-COZE_WORKFLOW_ID=
+COZE_WORKFLOW_ID=7677420616827928610
 COZE_WORKFLOW_VERSION=
 COZE_TIMEOUT_SECONDS=30
 ```
@@ -531,9 +531,9 @@ Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖r
 
 **命令**：`python -m pytest tests\test_coze_client.py tests\test_interactive_orchestrator.py -q`
 
-**验收**：未配置 Key 时不崩溃；配置后自由输入可分析；Coze 请求不含 expected 答案和不必要数据。
+**验收**：未配置 Key 时不崩溃；配置 PAT 后自由输入可分析；Coze 请求不含 expected 答案和不必要数据；已发布工作流可用 `task_type=analyze` 真实试运行。
 
-**完成定义**：自由输入模式可用，业务控制仍在本地。
+**完成定义**：工作流已发布且至少一条真实输入通过；本地 API 联调和完整 8 条评测仍作为本阶段后续验收。
 
 **Git**：`git add src tests .env.example README.md PROJECT_STATUS.md; git commit -m "feat: add Coze interactive mode"; git push origin main`
 

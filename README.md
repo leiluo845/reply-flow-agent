@@ -8,7 +8,7 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 1：已完成产品契约、场景目录、状态目录和决策日志冻结。
 
-阶段 2：进行中。已准备 Coze POC 提示词、Workflow 规格、8 条测试案例和结果模板；尚未完成真实 Coze Workflow 运行记录，因此不能视为阶段 2 完成。
+阶段 2：进行中。Coze `ReplyFlow_POC` 已发布（Workflow ID `7677420616827928610`，版本 `v0.0.1`），已完成 1 条真实试运行；尚缺 8 条案例记录与人工评分。
 
 阶段 3：已完成最小工程骨架。项目现在可以安装依赖、运行测试，并启动一个仅展示定位和未实现提示的 Streamlit 页面。
 
@@ -26,7 +26,7 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 10：已完成离线 Demo Mode。输入三类预置邮件会真实调用本地 Tools、Skill/依据层和风险网关，分别展示 L1 自动回复、L2 待确认、L3 高风险核对；无需 Coze 凭证。
 
-阶段 11：已完成 Coze Interactive 客户端和 Interactive 编排的本地代码与 mock 测试。真实联调前，需要在扣子创建并发布 `ReplyFlow POC` Workflow，再把 PAT、Workflow ID 和可选版本写入 `.env`；未配置时会明确失败并可回到 Demo Mode。
+阶段 11：已完成 Coze Interactive 客户端、Interactive 编排本地代码与 mock 测试，并已在 Coze 发布 `ReplyFlow_POC`（ID `7677420616827928610`，版本 `v0.0.1`）。本地联调仍需用户在 `.env` 自行填写 PAT；未配置时会明确失败并可回到 Demo Mode。
 
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
@@ -40,7 +40,7 @@ python scripts\validate_seed_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-阶段 3 页面只是工作台骨架，不会调用 Coze，也不会产生真实发送；阶段 5 数据层同样只读写本地虚构数据库。当前 Interactive Mode 还未连接真实 Workflow。
+阶段 3 页面只是工作台骨架，不会产生真实发送；阶段 5 数据层只读写本地虚构数据库。Coze Workflow 已发布，但本地 Interactive API 联调仍待完成。
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 

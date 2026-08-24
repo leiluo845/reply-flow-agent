@@ -79,6 +79,13 @@ def _extract_request_id(payload: dict[str, Any], response: HttpResponse) -> str 
     for key in ("request_id", "execute_id", "run_id"):
         if payload.get(key):
             return str(payload[key])
+    debug_url = payload.get("debug_url")
+    if isinstance(debug_url, str):
+        from urllib.parse import parse_qs, urlparse
+
+        query = parse_qs(urlparse(debug_url).query)
+        if query.get("execute_id"):
+            return query["execute_id"][0]
     headers = getattr(response, "headers", {}) or {}
     for key in ("x-request-id", "x-execute-id"):
         if headers.get(key):
@@ -130,10 +137,10 @@ class CozeClient:
             )
         payload: dict[str, Any] = {
             "workflow_id": self.settings.coze_workflow_id,
-            "parameters": {"task_type": task_type, **parameters},
+            # Coze CN's current API expects start-node parameters as a
+            # JSON-serialized string, not a nested object.
+            "parameters": json.dumps({"task_type": task_type, **parameters}, ensure_ascii=False),
         }
-        if self.settings.coze_workflow_version:
-            payload["workflow_version"] = self.settings.coze_workflow_version
         headers = {
             "Authorization": f"Bearer {self.settings.coze_api_token.get_secret_value()}",
             "Content-Type": "application/json",

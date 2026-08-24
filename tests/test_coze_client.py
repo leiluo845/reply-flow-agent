@@ -80,9 +80,10 @@ def test_analyze_parses_common_coze_output_wrapper_and_limits_inputs() -> None:
     assert call["url"] == "https://api.coze.cn/v1/workflow/run"
     assert call["headers"]["Authorization"] == "Bearer secret-token"
     assert call["json"]["workflow_id"] == "workflow-001"
-    assert call["json"]["workflow_version"] == "v1"
-    assert len(call["json"]["parameters"]["subject"]) == 300
-    assert len(call["json"]["parameters"]["body"]) == 8000
+    parameters = json.loads(call["json"]["parameters"])
+    assert len(parameters["subject"]) == 300
+    assert len(parameters["body"]) == 8000
+    assert parameters["task_type"] == "analyze"
     assert "expected" not in json.dumps(call["json"]).lower()
 
 
@@ -106,7 +107,26 @@ def test_draft_parses_direct_output_and_does_not_add_control_actions() -> None:
 
     assert result.draft_subject == "Re: Delivery"
     assert "send" not in result.model_dump_json().lower()
-    assert session.calls[0]["json"]["parameters"]["task_type"] == "draft"
+    assert json.loads(session.calls[0]["json"]["parameters"])["task_type"] == "draft"
+
+
+def test_official_style_data_string_and_debug_url_are_supported() -> None:
+    output = {"is_buyer_message": True, "intent": "shipping_status", "order_id": "ORD-1001", "missing_fields": [], "confidence": 0.9}
+    session = FakeSession(
+        FakeResponse(
+            payload={
+                "code": 0,
+                "data": json.dumps({"output": json.dumps(output)}),
+                "debug_url": "https://www.coze.cn/work_flow?execute_id=execute-123&workflow_id=workflow-001",
+            }
+        )
+    )
+    client = CozeClient(configured_settings(), session=session)
+
+    result = client._run("analyze", {"subject": "Hi", "body": "ORD-1001"})
+
+    assert result.request_id == "execute-123"
+    assert result.output == output
 
 
 @pytest.mark.parametrize(
