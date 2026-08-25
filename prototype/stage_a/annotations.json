@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "change_type": "update",
+    "title": "阶段 A 原页面基线",
+    "description": "以原亚马逊客服邮件工作台 HTML 作为主展示页面，暂不接入 Coze、风险分级或智能客服控件。",
+    "selector": "#qx-mail-prototype",
+    "prd_ref": "阶段 A 页面交互范围 / 目标",
+    "surface": "工作台",
+    "tags": ["页面", "核心改动"]
+  },
+  {
+    "id": 2,
+    "change_type": "update",
+    "title": "仅保留会话切换",
+    "description": "会话列表保留点击切换邮件详情和订单联动；筛选、排序、文件夹、分页等控件保持静态。",
+    "selector": ".conversations",
+    "prd_ref": "阶段 A 页面交互范围 / 保留交互",
+    "surface": "会话列表",
+    "tags": ["交互", "页面"]
+  },
+  {
+    "id": 3,
+    "change_type": "update",
+    "title": "保留回复编辑区",
+    "description": "回复输入框可输入、编辑和清空，作为阶段 B 中 AI 草稿的填充目标；阶段 A 的保存和发送按钮不执行逻辑。",
+    "selector": "#reply",
+    "prd_ref": "阶段 A 页面交互范围 / 保留交互",
+    "surface": "邮件详情",
+    "tags": ["交互", "核心改动"]
+  }
+]

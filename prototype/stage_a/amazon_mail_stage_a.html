@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>亚马逊客服邮件能力建设 P0 原型</title>
+<style>:root {
+  color-scheme: light dark;
+  background-color: var(--background) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: light-dark(rgb(255 255 255), rgb(24 24 24));
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 12.5px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E");
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html > body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--viz-font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive > .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align="right"]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align="center"]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget > :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls > .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls > .form-label > :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type="file"] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type="file"]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type="file"]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type="color"] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type="checkbox"]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: "";
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type="radio"]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: "";
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed="true"], [aria-selected="true"], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget > svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html,html>body{height:100%}html>body{padding:0}</style>
+</head>
+<body>
+<div id="qx-mail-prototype">
+  <style>
+    #qx-mail-prototype{--nav:#1d2a60;--nav2:#34437e;--brand:#4c57f3;--brand-soft:#eef0ff;--line:#e4e8ef;--page:#f4f6f9;--panel:#fff;--text:#202635;--muted:#778297;--danger:#d93a3a;--warn:#d88612;--success:#228657;position:relative;width:100%;height:100%;min-height:720px;overflow:hidden;background:var(--page);color:var(--text);font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;font-size:var(--font-size-base,14px);letter-spacing:0}
+    #qx-mail-prototype *{box-sizing:border-box}#qx-mail-prototype button,#qx-mail-prototype input,#qx-mail-prototype select,#qx-mail-prototype textarea{font:inherit;letter-spacing:0}#qx-mail-prototype button{cursor:pointer}#qx-mail-prototype a{color:var(--brand);text-decoration:none}
+    #qx-mail-prototype .app{height:100%;display:flex;min-width:0}.side{width:192px;flex:0 0 192px;background:var(--nav);color:#c7cde0;display:flex;flex-direction:column;position:relative;z-index:20}.brand{height:72px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.09)}.brand-row{display:flex;align-items:center;gap:9px;color:#fff;font-weight:500}.brand-mark{width:28px;height:28px;border:2px solid currentColor;transform:rotate(45deg);display:grid;place-items:center}.brand-mark span{transform:rotate(-45deg);font-size:12px}.brand-sub{margin-top:7px;font-size:12px;opacity:.68}.side-search{margin:12px;position:relative}.side-search input{width:100%;height:34px;border:0;border-radius:4px;background:rgba(255,255,255,.1);color:#fff;padding:0 10px 0 34px}.side-search input::placeholder{color:#b4bcd1}.side-search i{position:absolute;left:10px;top:9px}.menu-scroll{flex:1;min-height:0;overflow:auto;padding-bottom:16px}.menu-label{padding:13px 18px 6px;color:#8490b5;font-size:12px}.menu-item{width:100%;height:42px;border:0;background:transparent;color:#b8c0d6;padding:0 18px;display:flex;align-items:center;gap:10px;text-align:left}.menu-item:hover{color:#fff;background:rgba(255,255,255,.06)}.menu-item .arrow{margin-left:auto}.menu-item.active{margin:2px 8px;width:calc(100% - 16px);padding:0 10px;background:var(--nav2);color:#fff;border-radius:4px}.sub-flyout{position:absolute;left:192px;bottom:42px;width:220px;background:var(--panel);color:var(--text);border:1px solid var(--line);box-shadow:0 14px 34px rgba(17,24,39,.24);display:none;z-index:80}.sub-flyout.open{display:block}.sub-title{padding:18px 20px 10px;font-weight:500}.sub-item{width:100%;padding:14px 20px;border:0;background:transparent;text-align:left}.sub-item:hover,.sub-item.active{color:var(--brand);background:var(--brand-soft)}
+    .main{flex:1;min-width:0;display:flex;flex-direction:column}.global-head{height:50px;flex:0 0 50px;background:var(--panel);border-bottom:1px solid var(--line);padding:0 18px;display:flex;align-items:center;justify-content:space-between}.page-tab{height:50px;display:flex;align-items:center;border-bottom:2px solid var(--brand);padding:0 12px;font-weight:500}.head-tools{display:flex;align-items:center;gap:13px;color:#59657a}.avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand)}.page{display:none;flex:1;min-height:0}.page.active{display:flex;flex-direction:column}
+    .toolbar{position:relative;z-index:12;min-height:58px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:7px;flex-wrap:wrap}.control,.btn,.input{height:34px;border:1px solid #cdd4df;border-radius:4px;background:var(--panel);color:var(--text)}.control{padding:0 9px;min-width:0}.control:focus,.input:focus,textarea:focus{outline:2px solid rgba(76,87,243,.16);border-color:var(--brand)}.btn{padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.btn:hover{border-color:var(--brand);color:var(--brand)}.btn.primary,.btn.active{background:var(--brand);border-color:var(--brand);color:#fff}.btn.danger{color:var(--danger);border-color:rgba(217,58,58,.4)}.btn.ghost{border-color:transparent;background:transparent}.btn.sm{height:28px;padding:0 9px;font-size:12px}.btn.icon{width:34px;padding:0}.btn:disabled{opacity:.48;cursor:not-allowed}.check{height:34px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.search-input{width:170px}.date{width:116px}.store-trigger{width:210px;display:flex;align-items:center;justify-content:space-between;gap:8px}.store-trigger span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.spacer{flex:1}.segment{height:34px;border:1px solid #cdd4df;border-radius:4px;overflow:hidden;display:flex}.segment button{border:0;border-right:1px solid #cdd4df;background:var(--panel);padding:0 10px}.segment button:last-child{border-right:0}.segment button.active{background:var(--brand-soft);color:var(--brand)}.count{min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--brand);color:#fff;display:inline-grid;place-items:center;font-size:11px}.more.applied{color:var(--brand);border-color:var(--brand);background:var(--brand-soft)}
+    .popover{position:absolute;display:none;z-index:75;background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:0 12px 30px rgba(15,23,42,.16)}.popover.open{display:block}.store-pop{top:50px;left:12px;width:540px;padding:10px}.store-cascade{display:grid;grid-template-columns:170px 1fr;min-height:245px}.owner-list{padding-right:10px;border-right:1px solid var(--line)}.store-list{padding-left:10px}.owner-option{width:100%;min-height:38px;border:0;border-radius:3px;background:transparent;padding:0 9px;display:flex;align-items:center;justify-content:space-between;text-align:left}.owner-option:hover,.owner-option.active{background:var(--brand-soft);color:var(--brand)}.store-option{width:100%;border:0;border-radius:3px;background:transparent;padding:9px 8px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;text-align:left}.store-option:hover,.store-option.selected{background:var(--brand-soft)}.store-option small{color:var(--muted)}.store-option strong{color:var(--brand);font-weight:500}.cascade-title{padding:4px 8px 8px;color:var(--muted);font-size:12px}.more-pop{top:50px;right:160px;width:430px;padding:14px}.reminder-pop{top:50px;right:48px;width:380px;padding:14px}.reminder-copy{line-height:34px;color:#4c586b}.reminder-copy input{width:70px;margin:0 5px;text-align:center}.reminder-state{margin:8px 0 12px;color:var(--muted);font-size:12px}.pop-actions{display:flex;justify-content:flex-end;gap:8px}.pop-search{position:relative;margin-bottom:8px}.pop-search input{width:100%;padding-left:31px}.pop-search i{position:absolute;left:9px;top:9px;color:var(--muted)}.pop-title{font-weight:500;margin-bottom:12px}.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:12px;color:#4c586b}.required:before{content:"*";color:var(--danger);margin-right:3px}.input{width:100%;padding:6px 9px}.field textarea.input{height:auto;min-height:180px;resize:vertical}
+    .mail-grid{flex:1;min-height:0;display:grid;grid-template-columns:220px 296px minmax(390px,1fr) 292px}.folders,.conversations,.detail,.order{min-width:0;min-height:0;border-right:1px solid var(--line);background:var(--panel)}.folders{position:relative;background:#f8f9fb;display:flex;flex-direction:column}.folder-head{padding:12px;border-bottom:1px solid var(--line)}.sync-line{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:10px}.tree{padding:8px;overflow:auto}.tree-label{margin:12px 10px 6px;color:var(--muted);font-size:12px}.folder{width:100%;min-height:36px;border:0;border-radius:4px;background:transparent;color:#4c586b;padding:0 9px;display:flex;align-items:center;gap:8px;text-align:left}.folder:hover{background:#eef1f6}.folder.active{background:#e8ebff;color:var(--brand)}.folder .badge{margin-left:auto;color:var(--danger);font-size:12px}.mailbox-title{padding:8px 10px;display:flex;align-items:center;gap:7px;font-weight:500}.mailbox-status{width:7px;height:7px;border-radius:50%;background:var(--success)}.folder.child{padding-left:28px}
+    .conversations{display:flex;flex-direction:column}.list-head{min-height:45px;flex:0 0 45px;border-bottom:1px solid var(--line);padding:5px 10px;display:flex;align-items:center;gap:6px}.list-head .check{margin-right:auto}.list-sort{height:30px;max-width:112px;font-size:12px}.sort-direction{min-width:62px}.list-body{flex:1;min-height:0;overflow:auto}.conv{width:100%;min-height:86px;padding:12px 10px;border:0;border-bottom:1px solid var(--line);background:var(--panel);display:grid;grid-template-columns:24px 1fr auto;gap:4px 7px;text-align:left}.conv:hover{background:#f8f9fc}.conv.active{background:#edf0ff}.conv-check{grid-row:1/4;padding-top:2px}.conv-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:6px}.conv-time{color:var(--muted);font-size:12px}.conv-subject{grid-column:2/4;color:#4f5a6c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.conv-meta{grid-column:2/4;display:flex;align-items:center;gap:6px}.status{height:20px;padding:0 6px;border-radius:3px;background:#eef1f5;color:#566274;display:inline-flex;align-items:center;font-size:11px}.status.pending{background:#fff0ee;color:var(--danger)}.status.replied{background:#edf8f2;color:var(--success)}.status.platform{background:var(--brand-soft);color:var(--brand)}.countdown{margin-left:auto;color:var(--warn);font-size:11px}.timeout{margin-left:auto;color:var(--danger);font-size:11px}.mail-label-chip{height:20px;padding:0 6px;border:1px solid #d7dcef;border-radius:3px;color:var(--brand);display:inline-flex;align-items:center;font-size:11px}.pagination{height:44px;flex:0 0 44px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted)}.page-num{width:28px;height:28px;border:1px solid #cdd4df;border-radius:3px;background:var(--panel)}.page-num.active{color:var(--brand);border-color:var(--brand)}
+    .detail{display:flex;flex-direction:column}.actionbar{position:relative;min-height:45px;flex:0 0 45px;padding:7px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-wrap:wrap}.selection{display:none;color:var(--brand);font-size:12px}.selection.show{display:inline}#mobileOrder,#emailMoreBtn,#deleteMailBtn{display:none}.mail-grid.mail-file #emailMoreBtn,.mail-grid.mail-file #deleteMailBtn{display:inline-flex}.thread{flex:1;min-height:0;overflow:auto;padding:16px 18px}.thread-head{padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--line)}.thread-name{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.thread-name strong{font-size:18px;font-weight:500}.thread-email{color:var(--muted);word-break:break-all}.thread-subject{margin-top:7px;font-weight:500}.secondary{margin-top:7px;color:var(--muted);font-size:12px}.mail-item{margin-bottom:18px}.mail-meta{color:var(--muted);font-size:12px;margin-bottom:7px}.bubble{max-width:78%;padding:11px 13px;border-radius:4px;background:#eef1f6;color:#313b4b;white-space:pre-wrap}.mail-item.outgoing{display:flex;flex-direction:column;align-items:flex-end}.mail-item.outgoing .bubble{background:var(--brand-soft)}.mail-attachment{margin-top:8px;display:inline-flex;align-items:center;gap:7px;font-size:12px}.reply{flex:0 0 190px;border-top:1px solid var(--line);display:flex;flex-direction:column;position:relative}.reply.hidden{display:none}.reply-tools{min-height:40px;padding:5px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px}.reply-language{height:28px;max-width:88px;font-size:12px}.reply textarea{flex:1;resize:none;border:0;padding:10px 12px;background:var(--panel);color:var(--text);outline:none}.attachments{padding:0 12px 6px;display:flex;gap:6px;flex-wrap:wrap}.attachment{min-height:24px;padding:0 7px;border-radius:3px;background:#eff1f5;color:#59657a;display:inline-flex;align-items:center;gap:5px;font-size:12px}.remove{border:0;background:transparent;color:var(--muted);padding:0}.reply-foot{min-height:44px;padding:6px 10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:8px}.autosave{margin-right:auto;color:var(--muted);font-size:12px}.email-menu{top:42px;right:10px;width:210px;padding:8px}.email-menu-title{padding:5px 7px;color:var(--muted);font-size:12px}.email-label-option{width:100%;min-height:34px;border:0;border-radius:3px;background:transparent;padding:0 7px;display:flex;align-items:center;gap:7px;text-align:left}.email-label-option:hover,.email-label-option.active{background:var(--brand-soft);color:var(--brand)}
+    .order{border-right:0;background:#f7f8fa;display:flex;flex-direction:column}.order-tabs{height:45px;background:var(--panel);border-bottom:1px solid var(--line);padding:0 16px;display:flex;align-items:flex-end}.order-tab{height:45px;border:0;border-bottom:2px solid var(--brand);background:transparent;color:var(--brand)}.order-scroll{padding:14px;overflow:auto}.order-heading{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:500}.link{border:0;background:transparent;color:var(--brand);padding:0}.order-box{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:12px}.order-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.order-no{font-size:16px;font-weight:500}.tags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.tag{padding:2px 6px;border:1px solid #cdd4df;border-radius:3px;color:#596579;font-size:11px}.tag.warn{border-color:rgba(216,134,18,.5);color:var(--warn);background:#fff8ea}.tag.refund{display:none;border-color:rgba(217,58,58,.4);color:var(--danger);background:#fff0ef}.order-note{min-height:38px;margin:12px 0;padding:0 9px;background:#f4f6f8;color:var(--muted);display:flex;align-items:center}.kv{display:grid;grid-template-columns:88px minmax(0,1fr);gap:9px 7px;padding:4px 0 12px;border-bottom:1px solid var(--line);font-size:12px}.kv dt{color:var(--muted)}.kv dd{margin:0;word-break:break-word}.product{padding-top:12px;display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px}.product-img{width:52px;aspect-ratio:1;border-radius:3px;background:linear-gradient(135deg,#d8dce4,#f2f3f6);display:grid;place-items:center;color:var(--muted)}.product-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product-meta{margin-top:5px;display:grid;gap:3px;color:var(--muted);font-size:11px}.order-empty{display:none;flex:1;place-items:center;text-align:center;color:var(--muted)}.order-menu{right:14px;top:91px;width:110px;padding:5px}.order-menu button{width:100%;border:0;background:transparent;padding:8px;text-align:left;color:var(--danger)}.order-menu button:hover{background:#fff0ef}
+    .tag-section{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}.tag-head{height:32px;padding:0 7px;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px}.tag-add{width:28px;height:28px;border:0;border-radius:3px;background:transparent;color:var(--brand);display:grid;place-items:center}.tag-add:hover{background:var(--brand-soft)}.label-row{display:grid;grid-template-columns:minmax(0,1fr) 28px;align-items:center}.label-folder{min-width:0;min-height:34px;border:0;border-radius:3px;background:transparent;color:#4c586b;padding:0 8px;display:flex;align-items:center;gap:7px;text-align:left}.label-folder:hover,.label-folder.active{background:#e8ebff;color:var(--brand)}.label-folder span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.label-count{margin-left:auto;color:var(--muted);font-size:11px}.label-manage{width:28px;height:28px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center}.label-manage:hover{color:var(--brand)}.label-menu{left:88px;bottom:46px;width:120px;padding:5px}.label-menu button{width:100%;min-height:32px;border:0;background:transparent;padding:0 8px;display:flex;align-items:center;gap:7px;text-align:left}.label-menu button:hover{background:var(--brand-soft)}.label-menu .danger{color:var(--danger)}.refund-summary{display:grid;grid-template-columns:1fr auto;gap:10px 16px;margin-bottom:18px;padding:12px;background:#f6f7fa;border-radius:4px}.refund-summary span:nth-child(even){font-weight:500}.money-input{display:flex;align-items:center;border:1px solid #cdd4df;border-radius:4px;overflow:hidden}.money-input span{height:34px;padding:0 10px;background:#f3f5f8;display:flex;align-items:center;color:var(--muted)}.money-input input{height:34px;flex:1;min-width:0;border:0;padding:0 10px;outline:none}.field-error{min-height:18px;color:var(--danger);font-size:12px}.modal-note{margin-top:10px;color:var(--muted);font-size:12px}
+    .overlay{position:absolute;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(12,18,34,.48)}.overlay.open{display:flex}.modal{width:min(640px,100%);max-height:calc(100% - 28px);background:var(--panel);border-radius:5px;box-shadow:0 20px 60px rgba(15,23,42,.25);display:flex;flex-direction:column;overflow:hidden}.modal.lg{width:min(1080px,100%);height:min(700px,calc(100% - 28px))}.modal.md{width:min(760px,100%)}.modal.sm{width:min(430px,100%)}.modal-head{min-height:52px;padding:0 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.modal-head strong{font-size:16px;font-weight:500}.modal-close{width:32px;height:32px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center}.modal-body{flex:1;min-height:0;overflow:auto;padding:18px}.modal-foot{min-height:54px;padding:9px 18px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:8px}.confirm{padding:18px 4px 6px;display:flex;gap:13px}.confirm-icon{width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:#fff5df;color:var(--warn);display:grid;place-items:center}.confirm p{margin:4px 0 0;color:var(--muted)}.compose-tip{margin-bottom:14px;padding:10px 12px;border:1px solid #f1d78b;border-radius:4px;background:#fff9e8;color:#6f581e;font-size:12px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.inline-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.editor{height:100%;display:grid;grid-template-columns:230px minmax(0,1fr)}.selected-stores{padding:16px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}.selected-list{flex:1;min-height:100px;margin-top:10px;overflow:auto}.selected-store{min-height:34px;margin-bottom:7px;padding:0 9px;border-radius:3px;background:#f1f3f6;display:flex;align-items:center;justify-content:space-between;gap:8px}.editor-form{padding:18px;overflow:auto}.char-count{text-align:right;color:var(--muted);font-size:12px;margin-top:5px}.store-groups{display:grid;gap:16px}.store-group-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.group-name{padding:4px 8px;border-radius:10px;background:var(--brand-soft);color:#465171;font-size:12px}.store-checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}.store-checks label{display:flex;align-items:center;gap:6px;min-width:0}.store-checks span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.toast-stack{position:absolute;top:62px;left:50%;transform:translateX(-50%);z-index:180;display:grid;gap:8px;pointer-events:none}.toast{min-width:260px;max-width:480px;padding:10px 14px;border-radius:4px;background:#273043;color:#fff;box-shadow:0 8px 24px rgba(15,23,42,.22);display:flex;align-items:center;gap:8px}.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .mail-grid{position:relative}.mail-grid.mail-original{grid-template-columns:220px 296px minmax(390px,1fr)}.mail-grid.mail-original #orderPanel,.mail-grid.mail-original #mobileOrder,.mail-grid.mail-original .reply,.mail-grid.mail-original .mail-item.outgoing{display:none}.mail-grid.mail-original .bubble{max-width:none;padding:0;background:transparent}.original-reply{display:none;flex:0 0 58px;border-top:1px solid var(--line);padding:10px 12px;align-items:center;justify-content:flex-end}.mail-grid.mail-original .original-reply{display:flex}
+    @media(max-width:1500px){.side{width:168px;flex-basis:168px}.sub-flyout{left:168px}.mail-grid{grid-template-columns:205px 278px minmax(375px,1fr) 275px}.mail-grid.mail-original{grid-template-columns:205px 278px minmax(375px,1fr)}.toolbar{gap:5px}.search-input{width:145px}.date{width:104px}}
+    @media(max-width:1180px){.side{width:58px;flex-basis:58px}.brand{padding:15px}.brand-row>span:last-child,.brand-sub,.side-search,.menu-label,.menu-item span,.menu-item .arrow{display:none}.menu-item{justify-content:center;padding:0}.menu-item.active{padding:0}.sub-flyout{left:58px}.mail-grid{grid-template-columns:190px 260px minmax(340px,1fr)}.mail-grid.mail-original{grid-template-columns:190px 260px minmax(340px,1fr)}#mobileOrder{display:inline-flex}.order{position:absolute;right:0;top:108px;bottom:0;width:292px;box-shadow:-12px 0 28px rgba(15,23,42,.12);display:none;z-index:30}.order.mobile-open{display:flex}}
+    @media(max-width:1180px){.order{top:0}}
+    @media(max-width:760px){#qx-mail-prototype{height:900px}.folders{display:none}.mail-grid,.mail-grid.mail-original{grid-template-columns:240px minmax(320px,1fr);overflow:auto}.head-tools span:not(.avatar){display:none}.filter-grid,.form-grid{grid-template-columns:1fr}.span2{grid-column:auto}.editor{grid-template-columns:1fr;overflow:auto}.selected-stores{border-right:0;border-bottom:1px solid var(--line)}.store-checks{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){.spin{animation:none}}
+  </style>
+
+  <div class="app">
+    <aside class="side" aria-label="七星 OMS 导航">
+      <div class="brand"><div class="brand-row"><div class="brand-mark"><span>7</span></div><span>七星 OMS</span></div><div class="brand-sub">子不语数字化平台</div></div>
+      <div class="side-search"><i data-lucide="search" aria-hidden="true"></i><input aria-label="搜索菜单" placeholder="搜索菜单"></div>
+      <div class="menu-scroll">
+        <div class="menu-label">基础业务</div>
+        <button class="menu-item" type="button"><i data-lucide="palette" aria-hidden="true"></i><span>设计开发</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <button class="menu-item" type="button"><i data-lucide="package" aria-hidden="true"></i><span>产品管理</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <button class="menu-item" type="button"><i data-lucide="database" aria-hidden="true"></i><span>主数据</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <div class="menu-label">OMS 订单管理</div>
+        <button class="menu-item" type="button"><i data-lucide="shopping-cart" aria-hidden="true"></i><span>销售订单</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <button class="menu-item" type="button"><i data-lucide="warehouse" aria-hidden="true"></i><span>库存管理</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <button class="menu-item" type="button"><i data-lucide="truck" aria-hidden="true"></i><span>调拨管理</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <button class="menu-item active" id="mailMenu" type="button" aria-expanded="false"><i data-lucide="mail" aria-hidden="true"></i><span>客服邮件</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+        <div class="menu-label">SRM 供应商管理</div>
+        <button class="menu-item" type="button"><i data-lucide="building-2" aria-hidden="true"></i><span>供应商</span><i class="arrow" data-lucide="chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="sub-flyout" id="subMenu"><div class="sub-title">客服邮件</div><button class="sub-item active" type="button" data-page="mail">邮件消息</button></div>
+    </aside>
+
+    <main class="main">
+      <header class="global-head"><div class="page-tab" id="pageTitle">邮件消息</div><div class="head-tools"><i data-lucide="languages" aria-hidden="true"></i><i data-lucide="list-checks" aria-hidden="true"></i><i data-lucide="bell" aria-hidden="true"></i><i data-lucide="maximize" aria-hidden="true"></i><i data-lucide="sun" aria-hidden="true"></i><span class="avatar">薛</span><span>薛杭源</span></div></header>
+
+      <section class="page active" id="mailPage" aria-label="邮件消息">
+        <div class="toolbar" id="mailToolbar">
+          <button class="control store-trigger" id="storeBtn" type="button"><span>🇺🇸 吾在行Ptaesos-US美国</span><i data-lucide="chevron-down" aria-hidden="true"></i></button>
+          <label class="check"><input id="unread" type="checkbox">仅看未读</label>
+          <select class="control" id="status"><option>全部状态</option><option>待回复</option><option>无需回复</option><option>已在平台回复</option><option>已回复</option></select>
+          <select class="control" id="searchType"><option>发件人</option><option>收件人</option><option>主题</option></select>
+          <input class="control search-input" id="keyword" placeholder="请输入搜索内容">
+          <input class="control date" id="dateFrom" type="date" aria-label="开始日期"><span>至</span><input class="control date" id="dateTo" type="date" aria-label="结束日期">
+          <select class="control" id="attachmentFilter"><option>不限附件</option><option>有附件</option><option>无附件</option></select>
+          <button class="btn more applied" id="moreBtn" type="button">更多筛选（站内信）<span class="count" id="moreCount">2</span></button>
+          <button class="btn primary" id="searchBtn" type="button"><i data-lucide="search" aria-hidden="true"></i>搜索</button><button class="btn" id="resetBtn" type="button"><i data-lucide="rotate-ccw" aria-hidden="true"></i>重置</button>
+          <span class="spacer"></span><div class="segment"><button type="button" data-zone="北京">北京时间</button><button class="active" type="button" data-zone="站点">站点时间</button></div><button class="btn" id="reminderBtn" type="button"><i data-lucide="bell-ring" aria-hidden="true"></i>钉钉消息提醒</button><button class="btn icon" id="syncBtn" type="button" data-tooltip="同步当前店铺全部可用邮箱" aria-label="同步邮件"><i data-lucide="refresh-cw" aria-hidden="true"></i></button>
+          <div class="popover store-pop" id="storePop"><div class="pop-title">切换店铺</div><div class="store-cascade"><div class="owner-list"><div class="cascade-title">1. 选择负责人</div><button class="owner-option active" type="button" data-owner="薛杭源"><span>薛杭源</span><small>3 个店铺</small></button><button class="owner-option" type="button" data-owner="沈悦炜"><span>沈悦炜</span><small>2 个店铺</small></button><button class="owner-option" type="button" data-owner="张琪"><span>张琪</span><small>2 个店铺</small></button></div><div class="store-list"><div class="cascade-title" id="storeListTitle">2. 选择薛杭源负责的店铺</div><button class="store-option selected" type="button" data-owner="薛杭源" data-store="🇺🇸 吾在行Ptaesos-US美国" data-pending="23"><span>吾在行Ptaesos-US美国</span><strong>待回复 23</strong><small>美国站 · 2 个可用邮箱</small></button><button class="store-option" type="button" data-owner="薛杭源" data-store="🇨🇦 永安亚马逊Remikst-CA" data-pending="8"><span>永安亚马逊Remikst-CA</span><strong>待回复 8</strong><small>加拿大站 · 1 个可用邮箱</small></button><button class="store-option" type="button" data-owner="薛杭源" data-store="🇩🇪 Ptaesos-DE德国" data-pending="3"><span>Ptaesos-DE德国</span><strong>待回复 3</strong><small>德国站 · 1 个可用邮箱</small></button><button class="store-option" type="button" data-owner="沈悦炜" data-store="🇬🇧 亚马逊CC3-UK" data-pending="15" hidden><span>亚马逊CC3-UK</span><strong>待回复 15</strong><small>英国站 · 1 个可用邮箱</small></button><button class="store-option" type="button" data-owner="沈悦炜" data-store="🇫🇷 Remikst-FR法国" data-pending="4" hidden><span>Remikst-FR法国</span><strong>待回复 4</strong><small>法国站 · 1 个可用邮箱</small></button><button class="store-option" type="button" data-owner="张琪" data-store="🇯🇵 Ptaesos-JP日本" data-pending="12" hidden><span>Ptaesos-JP日本</span><strong>待回复 12</strong><small>日本站 · 1 个可用邮箱</small></button><button class="store-option" type="button" data-owner="张琪" data-store="🇦🇺 Ptaesos-AU澳洲" data-pending="2" hidden><span>Ptaesos-AU澳洲</span><strong>待回复 2</strong><small>澳洲站 · 1 个可用邮箱</small></button></div></div></div>
+          <div class="popover more-pop" id="morePop"><div class="pop-title">更多筛选（站内信）</div><div class="filter-grid"><div class="field"><label>订单号</label><input class="input more-input" value="112-5136312"></div></div></div>
+          <div class="popover reminder-pop" id="reminderPop"><div class="pop-title">当前店铺钉钉消息提醒</div><div class="reminder-copy">站内信剩余回复时间为<input class="control" id="reminderHours" type="number" min="1" step="1" placeholder="4">h 时，给店铺负责人推送钉钉通知。</div><div class="reminder-state" id="reminderState">当前店铺尚未开启提醒</div><div class="pop-actions"><button class="btn danger" id="disableReminder" type="button">关闭提醒</button><button class="btn primary" id="saveReminder" type="button">保存</button></div></div>
+        </div>
+
+        <div class="mail-grid">
+          <nav class="folders" aria-label="邮箱与文件夹"><div class="folder-head"><div class="sync-line"><span>同步时间：2026-07-22 09:48</span><i data-lucide="circle-check" aria-hidden="true"></i></div><button class="btn primary" id="newMailBtn" type="button" style="width:100%"><i data-lucide="square-pen" aria-hidden="true"></i>新建邮件</button></div><div class="tree"><button class="folder active" type="button" data-folder="aggregate"><i data-lucide="message-square" aria-hidden="true"></i><span>站内信</span><span class="badge">待回复 23</span></button><div class="tree-label">邮箱列表</div><div class="mailbox-title"><i data-lucide="chevron-down" aria-hidden="true"></i><span class="mailbox-status"></span><span>ptaesos2024@163.com</span></div><button class="folder child" type="button" data-folder="inbox"><i data-lucide="inbox" aria-hidden="true"></i><span>收件箱</span><span class="badge">99+</span></button><button class="folder child" type="button" data-folder="sent"><i data-lucide="send" aria-hidden="true"></i><span>发件箱</span></button><button class="folder child" type="button" data-folder="draft"><i data-lucide="file-pen-line" aria-hidden="true"></i><span>草稿箱</span><span class="badge">3</span></button><button class="folder child" type="button" data-folder="station"><i data-lucide="messages-square" aria-hidden="true"></i><span>站内信</span><span class="badge">12</span></button><button class="folder child" type="button" data-folder="qa"><i data-lucide="message-circle-question" aria-hidden="true"></i><span>Q&amp;A 问答</span></button><button class="folder child" type="button" data-folder="amazon"><i data-lucide="mail-check" aria-hidden="true"></i><span>亚马逊邮件</span><span class="badge">7</span></button><div class="mailbox-title"><i data-lucide="chevron-right" aria-hidden="true"></i><span class="mailbox-status"></span><span>service@ptaesos.com</span></div></div></nav>
+
+          <section class="conversations" aria-label="会话列表"><div class="list-head"><label class="check"><input id="allConvs" type="checkbox"><span id="timeLabel">收件时间</span></label><select class="control list-sort" id="sortField" aria-label="排序字段"><option value="updated">最后修改时间</option><option id="countdownSortOption" value="countdown">倒计时</option></select><button class="btn sm sort-direction" id="sortDirection" type="button" data-dir="desc"><i data-lucide="arrow-down" aria-hidden="true"></i>降序</button></div><div class="list-body">
+            <button class="conv active" type="button" data-conv="andrea" data-order="yes"><span class="conv-check"><input type="checkbox" aria-label="选择 Andrea"></span><span class="conv-name"><span class="dot"></span>Andrea</span><span class="conv-time">11:51</span><span class="conv-subject">Package didn't arrive: Request a refund</span><span class="conv-meta"><span class="status pending">待回复</span><i data-lucide="paperclip" aria-hidden="true"></i><span class="countdown">剩余 21h32m</span></span></button>
+            <button class="conv" type="button" data-conv="john" data-order="no"><span class="conv-check"><input type="checkbox" aria-label="选择 John"></span><span class="conv-name"><span class="dot"></span>John</span><span class="conv-time">07-21</span><span class="conv-subject">Order delivery inquiry from Amazon customer</span><span class="conv-meta"><span class="status platform">已在平台回复</span></span></button>
+            <button class="conv" type="button" data-conv="michael" data-order="yes"><span class="conv-check"><input type="checkbox" aria-label="选择 Michael"></span><span class="conv-name"><span class="dot"></span>Michael</span><span class="conv-time">07-20</span><span class="conv-subject">Inquiry from Amazon customer Michael</span><span class="conv-meta"><span class="status pending">待回复</span><span class="timeout">超时未回复</span></span></button>
+            <button class="conv" type="button" data-conv="meghan" data-order="yes"><span class="conv-check"><input type="checkbox" aria-label="选择 Meghan"></span><span class="conv-name">Meghan</span><span class="conv-time">07-19</span><span class="conv-subject">Return label has not been received</span><span class="conv-meta"><span class="status replied">已回复</span><i data-lucide="paperclip" aria-hidden="true"></i></span></button>
+            <button class="conv" type="button" data-conv="cindy" data-order="no"><span class="conv-check"><input type="checkbox" aria-label="选择 Cindy"></span><span class="conv-name">Cindy</span><span class="conv-time">07-18</span><span class="conv-subject">Package shows delivered but not received</span><span class="conv-meta"><span class="status">无需回复</span></span></button>
+            <button class="conv" type="button" data-conv="matt" data-order="yes"><span class="conv-check"><input type="checkbox" aria-label="选择 Matt"></span><span class="conv-name">Matt</span><span class="conv-time">07-18</span><span class="conv-subject">Product details inquiry</span><span class="conv-meta"><span class="status replied">已回复</span></span></button>
+          </div><div class="pagination"><span>共 1509 条</span><button class="page-num" type="button">‹</button><button class="page-num active" type="button">1</button><span>/ 76</span><button class="page-num" type="button">›</button></div></section>
+
+          <section class="detail" aria-label="邮件详情"><div class="actionbar"><span class="selection" id="selection">已选 0 项</span><button class="btn sm" type="button" data-action="read"><i data-lucide="mail-open" aria-hidden="true"></i>已读/未读</button><button class="btn sm" type="button" data-action="noreply"><i data-lucide="circle-slash" aria-hidden="true"></i>无需回复</button><button class="btn sm" type="button" data-action="platform"><i data-lucide="external-link" aria-hidden="true"></i>已在平台回复</button><button class="btn sm danger" id="deleteMailBtn" type="button" disabled><i data-lucide="trash-2" aria-hidden="true"></i>删除</button><span class="spacer"></span><button class="btn sm" id="translateMessageBtn" type="button"><i data-lucide="languages" aria-hidden="true"></i>翻译成中文</button><button class="btn sm" id="mobileOrder" type="button"><i data-lucide="receipt-text" aria-hidden="true"></i>订单详情</button><button class="btn sm icon" id="emailMoreBtn" type="button" aria-label="邮件更多操作"><i data-lucide="ellipsis" aria-hidden="true"></i></button><div class="popover email-menu" id="emailMenu"><div class="email-menu-title">设置邮件标签（单选）</div><div id="emailLabelOptions"></div></div></div><div class="thread" id="thread"><div class="thread-head"><div class="thread-name"><strong id="threadName">Andrea</strong><span class="thread-email" id="threadEmail">28mx3lghyyj5y3d+e1e60b90-5290-4e2d-946e-eeff1f5a4ccd@marketplace.amazon.com</span></div><div class="thread-subject" id="threadSubject">Inquiry from Amazon customer Andrea (Order: 112-5136312-1671440)</div><div class="secondary">收件人：ptaesos2024@163.com</div></div><div class="mail-item"><div class="mail-meta">Andrea · 2026-07-16 11:51:43 (UTC-07:00)</div><div class="bubble" id="message">I have not received a return label yet for this order. Please send it to me.</div><a class="mail-attachment" href="#file" onclick="return false"><i data-lucide="paperclip" aria-hidden="true"></i>order-photo.jpg · 628 KB<i data-lucide="download" aria-hidden="true"></i></a></div><div class="mail-item outgoing"><div class="mail-meta">客服 · 2026-07-16 12:08:21 (UTC-07:00)</div><div class="bubble" id="outgoingMessage">Thanks for contacting us. We are checking the delivery status for you.</div></div></div>
+            <div class="reply" id="reply"><div class="reply-tools"><select class="control reply-language" id="replyLanguage" aria-label="翻译语言"><option value="en">英文</option></select><button class="btn sm" id="replyTranslate" type="button"><i data-lucide="languages" aria-hidden="true"></i>翻译成英文</button><button class="btn sm" id="replyUpload" type="button"><i data-lucide="paperclip" aria-hidden="true"></i>上传附件</button><input id="replyFile" type="file" multiple hidden></div><textarea id="replyText" placeholder="回复当前会话"></textarea><div class="attachments" id="replyFiles"></div><div class="reply-foot"><span class="autosave" id="autosave">草稿已自动保存 10:26</span><button class="btn" id="saveDraft" type="button">保存草稿</button><button class="btn primary" id="sendReply" type="button"><i data-lucide="send" aria-hidden="true"></i>发送</button></div></div>
+            <div class="original-reply" id="originalReply"><button class="btn primary" id="originalReplyButton" type="button"><i data-lucide="reply" aria-hidden="true"></i>回复</button></div>
+          </section>
+
+          <aside class="order" id="orderPanel" aria-label="订单详情"><div class="order-tabs"><button class="order-tab" type="button">订单详情</button></div><div class="order-scroll" id="matchedOrder"><div class="order-heading"><span>订单详情</span><button class="link" type="button">更多 ›</button></div><div class="order-box"><div class="order-top"><div><a class="order-no" href="#order" onclick="return false">112-5136312-1671440</a><div class="tags"><span class="tag warn">Shipped</span><span class="tag warn">FBM</span><span class="tag refund" id="refundTag">已退款</span></div></div><button class="btn sm" id="orderAction" type="button">操作<i data-lucide="chevron-down" aria-hidden="true"></i></button></div><div class="order-note">备注：买家咨询退货标签</div><dl class="kv"><dt>出库单号</dt><dd><a href="#outbound" onclick="return false">CK202607160029</a></dd><dt>订单状态</dt><dd id="orderStatus">已发货</dd><dt>履约方式</dt><dd>FBM</dd><dt>发货仓库</dt><dd>美西三号仓</dd><dt>物流公司</dt><dd>UPS</dd><dt>物流跟踪号</dt><dd>1Z9W67Y00392138641</dd><dt>订单金额</dt><dd>USD 57.54</dd><dt>已退款金额</dt><dd id="orderRefunded">USD 0.00</dd></dl><div class="product"><div class="product-img"><i data-lucide="image" aria-hidden="true"></i></div><div><div class="product-name">Fisoew Womens Windbreaker Crop Jacket</div><div class="product-meta"><span>数量：1</span><span>ASIN：B0GY4CWR6K</span><span>MSKU：N7W032QKS050</span><span>SKU：JKT-US-2406-BLK-M</span></div></div></div></div></div><div class="order-empty" id="unmatchedOrder"><div><i data-lucide="package-search" aria-hidden="true"></i><p>未匹配到订单</p></div></div><div class="popover order-menu" id="orderMenu"><button id="refundItem" type="button"><i data-lucide="undo-2" aria-hidden="true"></i>退款</button></div></aside>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="overlay" id="refundModal"><div class="modal sm"><div class="modal-head"><strong>订单退款</strong><button class="modal-close" type="button" data-close="refundModal" aria-label="关闭"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="modal-body"><div class="refund-summary"><span>订单号</span><span>112-5136312-1671440</span><span>订单金额</span><span>USD 57.54</span><span>已退款金额</span><span id="refundPaid">USD 0.00</span><span>剩余可退金额</span><span id="refundRemaining">USD 57.54</span></div><div class="field"><label class="required">本次退款金额</label><div class="money-input"><span>USD</span><input id="refundAmount" type="number" min="0.01" max="57.54" step="0.01" placeholder="请输入退款金额"></div><div class="field-error" id="refundError"></div></div><div class="modal-note">退款成功后订单将标记为“已退款”，剩余金额仍可继续退款。</div></div><div class="modal-foot"><button class="btn" type="button" data-close="refundModal">取消</button><button class="btn primary" id="confirmRefund" type="button">确认退款</button></div></div></div>
+
+  <div class="overlay" id="composeModal"><div class="modal lg"><div class="modal-head"><strong id="composeTitle">新建邮件</strong><button class="modal-close" type="button" data-close="composeModal" aria-label="关闭"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="modal-body"><div class="compose-tip">主动联系买家应与订单履约或买家请求相关；主题建议包含订单编号；请勿使用误导性的“Important”等表达，并遵守亚马逊买家沟通政策。</div><div class="form-grid"><div class="field span2"><label class="required">收件人（最多 10 个）</label><input class="input" id="composeTo" placeholder="多个邮箱用逗号分隔"></div><div class="field"><label>抄送</label><input class="input"></div><div class="field"><label>密送</label><input class="input"></div><div class="field span2"><label class="required">主题</label><input class="input" id="composeSubject" placeholder="建议包含订单编号"></div><div class="field span2"><label class="required">发件邮箱</label><select class="input"><option>ptaesos2024@163.com</option><option>service@ptaesos.com</option></select></div><div class="field span2"><label class="required">正文</label><textarea class="input" id="composeBody" placeholder="请输入邮件正文"></textarea></div><div class="field span2"><label>附件</label><div class="inline-tools"><button class="btn" id="composeUpload" type="button"><i data-lucide="paperclip" aria-hidden="true"></i>上传附件</button><input id="composeFile" type="file" multiple hidden><div class="attachments" id="composeFiles"></div></div></div></div></div><div class="modal-foot"><span class="autosave">草稿自动保存已开启</span><button class="btn" id="saveCompose" type="button">保存草稿</button><button class="btn primary" id="sendCompose" type="button"><i data-lucide="send" aria-hidden="true"></i>发送</button></div></div></div>
+
+  <div class="overlay" id="labelModal"><div class="modal sm"><div class="modal-head"><strong id="labelModalTitle">新增标签</strong><button class="modal-close" type="button" data-close="labelModal" aria-label="关闭"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="modal-body"><div class="field"><label class="required">标签名称</label><input class="input" id="labelName" maxlength="20" placeholder="请输入标签名称"><div class="field-error" id="labelError"></div></div></div><div class="modal-foot"><button class="btn" type="button" data-close="labelModal">取消</button><button class="btn primary" id="saveLabel" type="button">保存</button></div></div></div>
+
+  <div class="overlay" id="labelDeleteModal"><div class="modal sm"><div class="modal-head"><strong>删除标签</strong><button class="modal-close" type="button" data-close="labelDeleteModal" aria-label="关闭"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="modal-body"><div class="confirm"><div class="confirm-icon"><i data-lucide="circle-alert" aria-hidden="true"></i></div><div><strong id="labelDeleteText">确认删除该标签吗？</strong><p>删除标签不会删除邮件，已标记邮件将自动清除该标签。</p></div></div></div><div class="modal-foot"><button class="btn" type="button" data-close="labelDeleteModal">取消</button><button class="btn danger" id="confirmLabelDelete" type="button">确认删除</button></div></div></div>
+
+  <div class="overlay" id="mailDeleteModal"><div class="modal sm"><div class="modal-head"><strong>删除邮件</strong><button class="modal-close" type="button" data-close="mailDeleteModal" aria-label="关闭"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="modal-body"><div class="confirm"><div class="confirm-icon"><i data-lucide="trash-2" aria-hidden="true"></i></div><div><strong id="mailDeleteText">确认删除选中的邮件吗？</strong><p>删除后不可恢复。顶部站内信邮件会话不支持删除。</p></div></div></div><div class="modal-foot"><button class="btn" type="button" data-close="mailDeleteModal">取消</button><button class="btn danger" id="confirmMailDelete" type="button">确认删除</button></div></div></div>
+
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+
+  <script type="text/plain" data-retired="legacy-template-prototype">
+    (()=>{
+      return;
+      const root=document.getElementById('qx-mail-prototype');if(!root)return;const $=s=>root.querySelector(s),$$=s=>Array.from(root.querySelectorAll(s));
+      const templates={refund:{name:'整单退款已完成',body:'Dear customer,\n\nThe full refund has been processed. Please check the original payment method for the refund status. If you still have questions, please contact us again.\n\nBest regards,',file:'refund-confirmation.pdf'},delay:{name:'物流延迟致歉',body:'Dear customer,\n\nWe sincerely apologize for the shipping delay. We are checking the latest tracking information and will keep you updated.\n\nBest regards,'},thanks:{name:'感谢购买',body:'Dear customer,\n\nThank you for your purchase. We hope you enjoy your order. Please feel free to contact us if you need any assistance.\n\nBest regards,'}};
+      const convs={andrea:{name:'Andrea',email:'28mx3lghyyj5y3d+e1e60b90-5290-4e2d-946e-eeff1f5a4ccd@marketplace.amazon.com',subject:'Inquiry from Amazon customer Andrea (Order: 112-5136312-1671440)',message:'I have not received a return label yet for this order. Please send it to me.'},john:{name:'John',email:'john-buyer-451@marketplace.amazon.com',subject:'Order delivery inquiry from Amazon customer',message:'The tracking has not changed for several days. Could you please check it?'},michael:{name:'Michael',email:'michael-882@marketplace.amazon.com',subject:'Inquiry from Amazon customer Michael (Order: 112-6004208-7811442)',message:'My package should have arrived last week, but I still have not received it.'},meghan:{name:'Meghan',email:'meghan-returns@marketplace.amazon.com',subject:'Return label has not been received',message:'Please resend the return label as an attachment.'},cindy:{name:'Cindy',email:'cindy-shopper@marketplace.amazon.com',subject:'Package shows delivered but not received',message:'The carrier shows delivered, but the package is not at my address.'},matt:{name:'Matt',email:'matt-question@marketplace.amazon.com',subject:'Product details inquiry',message:'Could you confirm whether this jacket is waterproof?'}};
+      let dirty=false,selectedStores=['吾在行Ptaesos-US美国'];
+      const icons=()=>window.lucide?.createIcons?.({attrs:{width:16,height:16,'stroke-width':1.8}});const open=id=>$('#'+id)?.classList.add('open');const close=id=>$('#'+id)?.classList.remove('open');const closePops=keep=>$$('.popover.open').forEach(x=>{if(x.id!==keep)x.classList.remove('open')});
+      const toast=(text,icon='circle-check')=>{const el=document.createElement('div');el.className='toast';el.innerHTML=`<i data-lucide="${icon}"></i><span>${text}</span>`;$('#toasts').append(el);icons();setTimeout(()=>el.remove(),2600)};
+      const chip=(box,name)=>{const el=document.createElement('span');el.className='attachment';el.innerHTML=`<i data-lucide="paperclip"></i><span>${name}</span><button class="remove" type="button" aria-label="删除附件"><i data-lucide="x"></i></button>`;el.querySelector('button').onclick=()=>el.remove();box.append(el);icons()};
+      const upload=(button,input,box)=>{$(button).onclick=()=>$(input).click();$(input).onchange=e=>Array.from(e.target.files).forEach(f=>chip($(box),f.name))};
+      $('#mailMenu').onclick=e=>{e.stopPropagation();$('#subMenu').classList.toggle('open')};$$('.sub-item').forEach(b=>b.onclick=()=>{$$('.sub-item').forEach(x=>x.classList.remove('active'));b.classList.add('active');const mail=b.dataset.page==='mail';$('#mailPage').classList.toggle('active',mail);$('#templatePage').classList.toggle('active',!mail);$('#pageTitle').textContent=mail?'邮件消息':'消息模板';$('#subMenu').classList.remove('open');closePops()});
+      $('#storeBtn').onclick=e=>{e.stopPropagation();closePops('storePop');$('#storePop').classList.toggle('open')};$('#storeSearch').oninput=e=>$$('.store-option').forEach(x=>x.style.display=x.textContent.toLowerCase().includes(e.target.value.toLowerCase())?'':'none');$$('.store-option').forEach(b=>b.onclick=()=>{$$('.store-option').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');$('#storeBtn span').textContent=b.dataset.store;$('#storePop').classList.remove('open');$('#resetBtn').click();toast('已切换店铺并重置全部筛选条件')});
+      const countMore=()=>{const n=$$('.more-input').filter(x=>x.value.trim()).length;$('#moreCount').textContent=n;$('#moreCount').style.display=n?'inline-grid':'none'};$$('.more-input').forEach(x=>x.oninput=countMore);$('#moreBtn').onclick=e=>{if(e.currentTarget.disabled)return;e.stopPropagation();closePops('morePop');$('#morePop').classList.toggle('open')};
+      $('#searchBtn').onclick=()=>{if($('#dateFrom').value&&$('#dateTo').value&&$('#dateFrom').value>$('#dateTo').value){toast('开始日期不能晚于结束日期','circle-alert');return}$('#morePop').classList.remove('open');$('#moreBtn').classList.toggle('applied',$$('.more-input').some(x=>x.value.trim())&&!$('#moreBtn').disabled);toast('筛选条件已应用，列表已回到第 1 页','search')};$('#keyword').onkeydown=e=>{if(e.key==='Enter')$('#searchBtn').click()};
+      $('#resetBtn').onclick=()=>{$('#unread').checked=false;$('#status').selectedIndex=0;$('#searchType').selectedIndex=0;$('#keyword').value='';$('#dateFrom').value='';$('#dateTo').value='';$('#attachmentFilter').selectedIndex=0;$$('.more-input').forEach(x=>x.value='');countMore();$('#moreBtn').classList.remove('applied');closePops();toast('已重置筛选并加载默认列表','rotate-ccw')};$$('[data-zone]').forEach(b=>b.onclick=()=>{$$('[data-zone]').forEach(x=>x.classList.remove('active'));b.classList.add('active');toast(`已切换为${b.dataset.zone}时间`)});
+      $('#syncBtn').onclick=()=>{const icon=$('#syncBtn svg')||$('#syncBtn i');icon.classList.add('spin');$('#syncBtn').disabled=true;setTimeout(()=>{icon.classList.remove('spin');$('#syncBtn').disabled=false;toast('同步完成：2 个邮箱成功，0 个失败','refresh-cw')},900)};
+      const folder={aggregate:['收件时间',true,true],inbox:['收件时间',true,false],sent:['发送时间',false,false],draft:['最后修改时间',false,false],station:['收件时间',true,true],qa:['收件时间',false,false],amazon:['收件时间',true,false]};$$('.folder').forEach(b=>b.onclick=()=>{$$('.folder').forEach(x=>x.classList.remove('active'));b.classList.add('active');const c=folder[b.dataset.folder];$('#timeLabel').textContent=c[0];$('#reply').classList.toggle('hidden',!c[1]);$('#moreBtn').disabled=!c[2];$('#moreBtn').classList.toggle('applied',c[2]&&Number($('#moreCount').textContent)>0);closePops();if(b.dataset.folder==='draft'){ $('#composeTitle').textContent='继续编辑草稿';$('#composeTo').value='buyer@example.com';$('#composeSubject').value='Re: Order 112-5136312-1671440';$('#composeBody').value='Dear customer,\n\nWe are still checking your order status.';open('composeModal')}else toast(`已切换文件夹：${b.textContent.trim().replace(/\s+/g,' ')}`)});
+      $$('.folder').forEach(b=>b.addEventListener('click',()=>$('.mail-grid').classList.toggle('mail-original',b.dataset.folder==='station')));
+      $$('.conv').forEach(b=>b.onclick=e=>{if(e.target.matches('input'))return;$$('.conv').forEach(x=>x.classList.remove('active'));b.classList.add('active');const c=convs[b.dataset.conv];$('#threadName').textContent=c.name;$('#threadEmail').textContent=c.email;$('#threadSubject').textContent=c.subject;$('#message').textContent=c.message;const matched=b.dataset.order==='yes';$('#matchedOrder').style.display=matched?'block':'none';$('#unmatchedOrder').style.display=matched?'none':'grid'});
+      const selected=()=>{const n=$$('.conv-check input:checked').length;$('#selection').textContent=`已选 ${n} 项`;$('#selection').classList.toggle('show',n>0);$('#allConvs').checked=n>0&&n===$$('.conv-check input').length};$$('.conv-check input').forEach(x=>x.onchange=selected);$('#allConvs').onchange=e=>{$$('.conv-check input').forEach(x=>x.checked=e.target.checked);selected()};
+      $$('[data-action]').forEach(b=>b.onclick=()=>{const n=$$('.conv-check input:checked').length,label={read:'已读/未读',noreply:'无需回复',platform:'已在平台回复'}[b.dataset.action],rows=n?$$('.conv-check input:checked').map(x=>x.closest('.conv')):[$('.conv.active')];if(b.dataset.action!=='read')rows.forEach(r=>{const s=r.querySelector('.status');s.className=b.dataset.action==='platform'?'status platform':'status';s.textContent=label;r.querySelector('.countdown')?.remove();r.querySelector('.timeout')?.remove()});toast(n?`已批量标记 ${n} 个会话：${label}`:`当前会话已标记：${label}`)});
+      upload('#replyUpload','#replyFile','#replyFiles');upload('#composeUpload','#composeFile','#composeFiles');upload('#editorUpload','#editorFile','#editorFiles');$('#templateBtn').onclick=e=>{e.stopPropagation();closePops('templatePop');$('#templatePop').classList.toggle('open')};$('#templateSearch').oninput=e=>$$('.template-option').forEach(x=>x.style.display=x.textContent.toLowerCase().includes(e.target.value.toLowerCase())?'':'none');
+      $$('.template-option').forEach(b=>b.onclick=()=>{const t=templates[b.dataset.tpl],a=$('#replyText'),p=a.selectionStart??a.value.length,prefix=a.value&&p&&a.value[p-1]!=='\n'?'\n':'';a.value=a.value.slice(0,p)+prefix+t.body+a.value.slice(p);a.selectionStart=a.selectionEnd=p+prefix.length+t.body.length;a.focus();if(t.file)chip($('#replyFiles'),t.file);$('#templatePop').classList.remove('open');toast(`已插入模板：${t.name}`)});
+      $('#saveDraft').onclick=()=>{toast('草稿已保存，可在草稿箱继续编辑','save');$('#reply').classList.add('hidden');setTimeout(()=>$('#reply').classList.remove('hidden'),600)};$('#sendReply').onclick=()=>{const text=$('#replyText').value.trim();if(!text){toast('请输入回复内容','circle-alert');return}const b=$('#sendReply');b.disabled=true;b.innerHTML='<i data-lucide="loader-circle" class="spin"></i>发送中';icons();setTimeout(()=>{const item=document.createElement('div');item.className='mail-item outgoing';item.innerHTML='<div class="mail-meta">客服 · 刚刚</div><div class="bubble"></div>';item.querySelector('.bubble').textContent=text;$('#thread').append(item);$('#replyText').value='';$('#replyFiles').innerHTML='';b.disabled=false;b.innerHTML='<i data-lucide="send"></i>发送';const s=$('.conv.active .status');s.className='status replied';s.textContent='已回复';$('.conv.active .countdown')?.remove();$('.conv.active .timeout')?.remove();icons();toast('发送成功，会话状态已更新为“已回复”','send')},800)};
+      $('#orderAction').onclick=e=>{e.stopPropagation();closePops('orderMenu');$('#orderMenu').classList.toggle('open')};$('#refundItem').onclick=()=>{closePops();open('refundModal')};$('#confirmRefund').onclick=()=>{const b=$('#confirmRefund');b.disabled=true;b.innerHTML='<i data-lucide="loader-circle" class="spin"></i>退款中';icons();$$('[data-close="refundModal"]').forEach(x=>x.disabled=true);setTimeout(()=>{close('refundModal');b.disabled=false;b.textContent='确认';$$('[data-close="refundModal"]').forEach(x=>x.disabled=false);$('#refundTag').style.display='inline-flex';$('#orderStatus').textContent='已退款';$('#refundItem').disabled=true;$('#refundItem').textContent='已全额退款';toast('退款成功，订单详情已刷新')},900)};$('#mobileOrder').onclick=()=>$('#orderPanel').classList.toggle('mobile-open');
+      $('#newMailBtn').onclick=()=>{$('#composeTitle').textContent='新建邮件';$('#composeTo').value='';$('#composeSubject').value='';$('#composeBody').value='';$('#composeTpl').value='';$('#composeFiles').innerHTML='';open('composeModal')};$('#originalReplyButton').onclick=()=>{$('#composeTitle').textContent='回复邮件';$('#composeTo').value=$('#threadEmail').textContent.trim();$('#composeSubject').value=`回复${$('#threadSubject').textContent.trim()}`;$('#composeBody').value='';$('#composeTpl').value='';$('#composeFiles').innerHTML='';open('composeModal')};$('#composeTpl').onchange=e=>{if(!e.target.value)return;const t=templates[e.target.value],a=$('#composeBody'),p=a.selectionStart??a.value.length;a.value=a.value.slice(0,p)+(a.value&&p?'\n':'')+t.body+a.value.slice(p);if(t.file)chip($('#composeFiles'),t.file);toast(`已插入模板：${t.name}`)};$('#saveCompose').onclick=()=>{close('composeModal');toast('草稿已保存，可在对应邮箱草稿箱查看','save')};$('#sendCompose').onclick=()=>{if(!$('#composeTo').value.trim()||!$('#composeSubject').value.trim()||!$('#composeBody').value.trim()){toast('请填写收件人、主题和正文','circle-alert');return}const b=$('#sendCompose');b.disabled=true;setTimeout(()=>{b.disabled=false;close('composeModal');toast('邮件发送成功，已写入发件箱','send')},700)};
+      const updateTplSelection=()=>{const checks=$$('.tpl-check'),n=checks.filter(x=>x.checked).length;$('#deleteTemplate').disabled=!n;$('#allTemplates').checked=n>0&&n===checks.length};$$('.tpl-check').forEach(x=>x.onchange=updateTplSelection);$('#allTemplates').onchange=e=>{$$('.tpl-check').forEach(x=>x.checked=e.target.checked);updateTplSelection()};$('#deleteTemplate').onclick=()=>{const n=$$('.tpl-check:checked').length;$('#deleteText').textContent=`确认删除选中的 ${n} 个模板吗？`;open('deleteModal')};$('#confirmDelete').onclick=()=>{$$('.tpl-check:checked').forEach(x=>x.closest('tr').remove());close('deleteModal');updateTplSelection();toast('模板删除成功','trash-2')};$('#tplSearch').onclick=()=>toast('模板筛选条件已应用','search');$('#tplKeyword').onkeydown=e=>{if(e.key==='Enter')$('#tplSearch').click()};$('#tplReset').onclick=()=>{$$('.tpl-filter').forEach(x=>x.value='');$('#tplKeyword').value='';toast('已重置筛选并加载默认模板列表','rotate-ccw')};
+      const renderStores=()=>{const box=$('#selectedStores');box.innerHTML=selectedStores.length?'':'<span style="color:var(--muted);font-size:12px">尚未选择店铺</span>';selectedStores.forEach(name=>{const row=document.createElement('div');row.className='selected-store';row.innerHTML=`<span>${name}</span><button class="remove" type="button" aria-label="移除店铺"><i data-lucide="x"></i></button>`;row.querySelector('button').onclick=()=>{selectedStores=selectedStores.filter(x=>x!==name);dirty=true;renderStores()};box.append(row)});icons()};
+      const edit=mode=>{const t=mode==='new'?null:templates[mode];$('#editorTitle').textContent=t?'编辑消息模板':'新增消息模板';$('#editorName').value=t?.name||'';$('#editorBody').value=t?.body||'';$('#editorFiles').innerHTML='';if(t?.file)chip($('#editorFiles'),t.file);selectedStores=t?(mode==='refund'?['吾在行Ptaesos-US美国','永安亚马逊Remikst-CA']:['吾在行Ptaesos-US美国']):[];$('#charCount').textContent=`${$('#editorBody').value.length} / 2000`;dirty=false;renderStores();open('editorModal')};$('#addTemplate').onclick=()=>edit('new');$$('[data-edit]').forEach(b=>b.onclick=()=>edit(b.dataset.edit));$('#editorName').oninput=()=>dirty=true;$('#editorBody').oninput=e=>{dirty=true;$('#charCount').textContent=`${e.target.value.length} / 2000`};$('#editorFile').onchange=()=>dirty=true;$$('.editor-close').forEach(b=>b.onclick=()=>dirty?open('discardModal'):close('editorModal'));$('#discardEditor').onclick=()=>{close('discardModal');close('editorModal');dirty=false};
+      $('#pickStores').onclick=()=>{$$('#storeModal input[type="checkbox"]').forEach(x=>x.checked=selectedStores.includes(x.value));open('storeModal')};$$('[data-group]').forEach(b=>b.onclick=()=>{const list=$$(`[data-check-group="${b.dataset.group}"] input`),check=list.some(x=>!x.checked);list.forEach(x=>x.checked=check);b.textContent=check?'取消全选':'全选'});$('#confirmStores').onclick=()=>{selectedStores=$$('#storeModal input[type="checkbox"]:checked').map(x=>x.value);dirty=true;renderStores();close('storeModal')};$('#pickSearch').oninput=e=>$$('.store-checks label').forEach(x=>x.style.display=x.textContent.toLowerCase().includes(e.target.value.toLowerCase())?'flex':'none');$('#saveTemplate').onclick=()=>{if(!selectedStores.length||!$('#editorName').value.trim()||!$('#editorBody').value.trim()){toast('请至少选择 1 个店铺，并填写模板名称和正文','circle-alert');return}const b=$('#saveTemplate');b.disabled=true;setTimeout(()=>{b.disabled=false;dirty=false;close('editorModal');toast('消息模板保存成功','save')},650)};
+      $$('[data-close]').forEach(b=>b.onclick=()=>{if(!b.disabled)close(b.dataset.close)});$$('.overlay').forEach(o=>o.onclick=e=>{if(e.target!==o)return;if(o.id==='editorModal'&&dirty)open('discardModal');else if(o.id!=='refundModal'||!$('#confirmRefund').disabled)close(o.id)});document.addEventListener('click',e=>{if(!root.contains(e.target))return;if(!e.target.closest('.popover')&&!e.target.closest('#storeBtn,#moreBtn,#templateBtn,#orderAction,#mailMenu')){closePops();$('#subMenu').classList.remove('open')}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){const list=$$('.overlay.open');if(list.length){const top=list.at(-1);if(top.id==='editorModal'&&dirty)open('discardModal');else close(top.id)}else closePops()}});
+      renderStores();countMore();icons();
+    })();
+  </script>
+  <script>
+    (()=>{
+      const root=document.getElementById('qx-mail-prototype');if(!root)return;
+      const $=s=>root.querySelector(s),$$=s=>Array.from(root.querySelectorAll(s));
+      const icons=()=>window.lucide?.createIcons?.({attrs:{width:16,height:16,'stroke-width':1.8}});
+      const open=id=>$('#'+id)?.classList.add('open');
+      const close=id=>$('#'+id)?.classList.remove('open');
+      const closePops=keep=>$$('.popover.open').forEach(x=>{if(x.id!==keep)x.classList.remove('open')});
+      const toast=(message,icon='circle-check')=>{const el=document.createElement('div');el.className='toast';el.innerHTML=`<i data-lucide="${icon}"></i><span>${message}</span>`;$('#toasts').append(el);icons();setTimeout(()=>el.remove(),2600)};
+      const conversations={
+        andrea:{name:'Andrea',email:'28mx3lghyyj5y3d+e1e60b90-5290-4e2d-946e-eeff1f5a4ccd@marketplace.amazon.com',subject:'Inquiry from Amazon customer Andrea (Order: 112-5136312-1671440)',message:'I have not received a return label yet for this order. Please send it to me.',zh:'我还没有收到这个订单的退货标签，请发送给我。'},
+        john:{name:'John',email:'john-buyer-451@marketplace.amazon.com',subject:'Order delivery inquiry from Amazon customer',message:'The tracking has not changed for several days. Could you please check it?',zh:'物流信息已经几天没有更新了，可以帮我查看一下吗？'},
+        michael:{name:'Michael',email:'michael-882@marketplace.amazon.com',subject:'Inquiry from Amazon customer Michael (Order: 112-6004208-7811442)',message:'My package should have arrived last week, but I still have not received it.',zh:'我的包裹上周就应该送达，但我至今仍未收到。'},
+        meghan:{name:'Meghan',email:'meghan-returns@marketplace.amazon.com',subject:'Return label has not been received',message:'Please resend the return label as an attachment.',zh:'请以附件形式重新发送退货标签。'},
+        cindy:{name:'Cindy',email:'cindy-shopper@marketplace.amazon.com',subject:'Package shows delivered but not received',message:'The carrier shows delivered, but the package is not at my address.',zh:'承运商显示已经送达，但我的地址并没有收到包裹。'},
+        matt:{name:'Matt',email:'matt-question@marketplace.amazon.com',subject:'Product details inquiry',message:'Could you confirm whether this jacket is waterproof?',zh:'可以确认一下这件夹克是否防水吗？'}
+      };
+      const metadata={andrea:{updated:6,countdown:21.53},john:{updated:5,countdown:null},michael:{updated:4,countdown:-30},meghan:{updated:3,countdown:null},cindy:{updated:2,countdown:null},matt:{updated:1,countdown:null}};
+      const folderConfig={
+        aggregate:{time:'收件时间',more:true,quick:true,replyButton:false},
+        inbox:{time:'收件时间',more:false,quick:false,replyButton:true},
+        sent:{time:'发送时间',more:false,quick:false,replyButton:false},
+        draft:{time:'最后修改时间',more:false,quick:false,replyButton:false},
+        station:{time:'收件时间',more:true,quick:false,replyButton:true},
+        qa:{time:'收件时间',more:false,quick:false,replyButton:false},
+        amazon:{time:'收件时间',more:false,quick:false,replyButton:true}
+      };
+      const labels=['紧急','售后处理'];
+      const labelAssignments={inbox:{andrea:'紧急',michael:'售后处理'},sent:{},draft:{},station:{meghan:'紧急'},qa:{},amazon:{john:'售后处理'}};
+      const deletedByFolder={inbox:new Set(),sent:new Set(),draft:new Set(),station:new Set(),qa:new Set(),amazon:new Set()};
+      const reminderByStore={};
+      let currentFolder='aggregate',currentStore=$('#storeBtn span').textContent.trim(),activeLabel=null,editingLabel=null,refundedCents=0;
+      const totalCents=5754;
+
+      $$('.conv').forEach(row=>{const data=metadata[row.dataset.conv];row.dataset.updated=String(data.updated);row.dataset.countdown=data.countdown==null?'':String(data.countdown)});
+
+      const chip=(box,name)=>{const el=document.createElement('span');el.className='attachment';el.innerHTML=`<i data-lucide="paperclip"></i><span>${name}</span><button class="remove" type="button" aria-label="删除附件"><i data-lucide="x"></i></button>`;el.querySelector('button').onclick=()=>el.remove();box.append(el);icons()};
+      const bindUpload=(button,input,box)=>{$(button).onclick=()=>$(input).click();$(input).onchange=e=>{Array.from(e.target.files).forEach(file=>chip($(box),file.name));e.target.value=''}};
+
+      const tree=$('.tree');
+      const tagSection=document.createElement('div');
+      tagSection.id='tagSection';tagSection.className='tag-section';tagSection.hidden=true;
+      tagSection.innerHTML='<div class="tag-head"><span>邮件标签</span><button class="tag-add" id="addLabelBtn" type="button" data-tooltip="新增标签" aria-label="新增标签"><i data-lucide="plus"></i></button></div><div id="labelList"></div><div class="popover label-menu" id="labelMenu"><button id="renameLabelBtn" type="button"><i data-lucide="pencil"></i>重命名</button><button class="danger" id="deleteLabelBtn" type="button"><i data-lucide="trash-2"></i>删除</button></div>';
+      tree.append(tagSection);
+
+      const assignments=()=>labelAssignments[currentFolder]||{};
+      const visibleRows=()=>$$('.conv').filter(row=>row.style.display!=='none');
+      const updateSelection=()=>{const boxes=visibleRows().map(row=>row.querySelector('.conv-check input'));const checked=boxes.filter(box=>box.checked);$('#selection').textContent=`已选 ${checked.length} 项`;$('#selection').classList.toggle('show',checked.length>0);$('#allConvs').checked=boxes.length>0&&checked.length===boxes.length;$('#allConvs').indeterminate=checked.length>0&&checked.length<boxes.length;$('#deleteMailBtn').disabled=currentFolder==='aggregate'};
+      const renderRows=()=>{const deleted=deletedByFolder[currentFolder]||new Set();$$('.conv').forEach(row=>{const byLabel=!activeLabel||assignments()[row.dataset.conv]===activeLabel;row.style.display=!deleted.has(row.dataset.conv)&&byLabel?'':'none';if(row.style.display==='none')row.querySelector('input').checked=false});updateSelection()};
+      const renderEmailLabelOptions=()=>{const id=$('.conv.active')?.dataset.conv,current=assignments()[id];$('#emailLabelOptions').innerHTML=[`<button class="email-label-option ${!current?'active':''}" type="button" data-email-label=""><i data-lucide="circle-slash"></i>无标签</button>`,...labels.map(label=>`<button class="email-label-option ${current===label?'active':''}" type="button" data-email-label="${label}"><i data-lucide="tag"></i>${label}</button>`)].join('');$$('[data-email-label]').forEach(button=>button.onclick=()=>{const value=button.dataset.emailLabel;if(value)assignments()[id]=value;else delete assignments()[id];close('emailMenu');renderLabels();renderRows();renderEmailLabelOptions();toast(value?`邮件已标记为“${value}”`:'已清除邮件标签','tag')});icons()};
+      const renderLabels=()=>{const counts=Object.values(assignments()).reduce((map,label)=>{map[label]=(map[label]||0)+1;return map},{});$('#labelList').innerHTML=labels.map(label=>`<div class="label-row"><button class="label-folder ${activeLabel===label?'active':''}" type="button" data-label-filter="${label}"><i data-lucide="tag"></i><span>${label}</span><span class="label-count">${counts[label]||0}</span></button><button class="label-manage" type="button" data-label-manage="${label}" aria-label="管理${label}"><i data-lucide="ellipsis"></i></button></div>`).join('');$$('[data-label-filter]').forEach(button=>button.onclick=()=>{activeLabel=activeLabel===button.dataset.labelFilter?null:button.dataset.labelFilter;renderLabels();renderRows();toast(activeLabel?`已筛选标签：${activeLabel}`:'已取消标签筛选','filter')});$$('[data-label-manage]').forEach(button=>button.onclick=e=>{e.stopPropagation();editingLabel=button.dataset.labelManage;closePops('labelMenu');$('#labelMenu').classList.toggle('open')});renderEmailLabelOptions();icons()};
+
+      const resetTranslation=()=>{const id=$('.conv.active')?.dataset.conv;if(id&&conversations[id])$('#message').textContent=conversations[id].message;$('#translateMessageBtn').dataset.translated='false';$('#translateMessageBtn').innerHTML='<i data-lucide="languages"></i>翻译成中文';icons()};
+      const loadConversation=row=>{if(!row)return;$$('.conv').forEach(x=>x.classList.remove('active'));row.classList.add('active');const data=conversations[row.dataset.conv];$('#threadName').textContent=data.name;$('#threadEmail').textContent=data.email;$('#threadSubject').textContent=data.subject;$('#message').textContent=data.message;resetTranslation();if(currentFolder==='aggregate'){const matched=row.dataset.order==='yes';$('#matchedOrder').style.display=matched?'block':'none';$('#unmatchedOrder').style.display=matched?'none':'grid'}renderEmailLabelOptions()};
+
+      const countMore=()=>{const count=$$('.more-input').filter(input=>input.value.trim()).length;$('#moreCount').textContent=count;$('#moreCount').style.display=count?'inline-grid':'none'};
+      const resetFilters=(silent=false)=>{$('#unread').checked=false;$('#status').selectedIndex=0;$('#searchType').selectedIndex=0;$('#keyword').value='';$('#dateFrom').value='';$('#dateTo').value='';$('#attachmentFilter').selectedIndex=0;$$('.more-input').forEach(input=>input.value='');countMore();$('#moreBtn').classList.remove('applied');closePops();if(!silent)toast('已重置筛选并加载默认列表','rotate-ccw')};
+
+      const sortRows=()=>{const list=$('.list-body'),rows=$$('.conv'),field=$('#sortField').value,descending=$('#sortDirection').dataset.dir==='desc';const value=row=>row.dataset.countdown===''?null:Number(row.dataset.countdown);rows.sort((a,b)=>{let result;if(field==='countdown'&&currentFolder==='aggregate'){const av=value(a),bv=value(b);if(av!=null&&bv!=null)result=av-bv;else if(av!=null)result=-1;else if(bv!=null)result=1;else result=Number(a.dataset.updated)-Number(b.dataset.updated)}else result=Number(a.dataset.updated)-Number(b.dataset.updated);return descending?-result:result});rows.forEach(row=>list.append(row));renderRows()};
+      const updateSortAvailability=()=>{const enabled=currentFolder==='aggregate';$('#countdownSortOption').disabled=!enabled;if(!enabled&&$('#sortField').value==='countdown')$('#sortField').value='updated';sortRows()};
+
+      const switchFolder=button=>{currentFolder=button.dataset.folder;activeLabel=null;$$('.folder').forEach(x=>x.classList.toggle('active',x===button));const config=folderConfig[currentFolder],concrete=currentFolder!=='aggregate',$grid=$('.mail-grid');$grid.classList.toggle('mail-file',concrete);$grid.classList.toggle('mail-original',concrete);$('#timeLabel').textContent=config.time;$('#moreBtn').disabled=!config.more;$('#moreBtn').classList.toggle('applied',config.more&&Number($('#moreCount').textContent)>0);$('#reply').classList.toggle('hidden',!config.quick);$('#originalReply').style.display=config.replyButton?'':'none';tagSection.hidden=!concrete;$('#deleteMailBtn').disabled=!concrete;closePops();resetTranslation();renderLabels();renderRows();updateSortAvailability();if(currentFolder==='draft'){$('#composeTitle').textContent='继续编辑草稿';$('#composeTo').value='buyer@example.com';$('#composeSubject').value='Re: Order 112-5136312-1671440';$('#composeBody').value='Dear customer,\n\nWe are still checking your order status.';open('composeModal')}else toast(`已切换文件夹：${button.textContent.trim().replace(/\s+/g,' ')}`)};
+
+      const showReminder=()=>{const state=reminderByStore[currentStore];$('#reminderHours').value=state?.hours||'';$('#reminderState').textContent=state?.enabled?`已开启：剩余 ${state.hours}h 时提醒店铺负责人`:'当前店铺尚未开启提醒'};
+      const renderOwnerStores=owner=>{const list=$('.store-list'),title=$('#storeListTitle'),buttons=$$('.store-option').filter(button=>button.dataset.owner===owner).sort((a,b)=>Number(b.dataset.pending)-Number(a.dataset.pending));title.textContent=`2. 选择${owner}负责的店铺`;$$('.store-option').forEach(button=>button.style.display=button.dataset.owner===owner?'':'none');buttons.forEach(button=>list.append(button))};
+
+      $('#mailMenu').onclick=e=>{e.stopPropagation();$('#subMenu').classList.toggle('open')};
+      $('.sub-item').onclick=()=>$('#subMenu').classList.remove('open');
+      $('#storeBtn').onclick=e=>{e.stopPropagation();closePops('storePop');$('#storePop').classList.toggle('open')};
+      $$('.owner-option').forEach(button=>button.onclick=e=>{e.stopPropagation();$$('.owner-option').forEach(x=>x.classList.toggle('active',x===button));renderOwnerStores(button.dataset.owner);toast('已选择负责人，请继续选择具体店铺','user-round')});
+      $$('.store-option').forEach(button=>button.onclick=()=>{currentStore=button.dataset.store;$$('.store-option').forEach(x=>x.classList.toggle('selected',x===button));$('#storeBtn span').textContent=currentStore;resetFilters(true);showReminder();toast('已切换具体店铺并重置全部筛选条件','store')});
+      $('#reminderBtn').onclick=e=>{e.stopPropagation();closePops('reminderPop');showReminder();$('#reminderPop').classList.toggle('open')};
+      $('#saveReminder').onclick=()=>{const hours=Number($('#reminderHours').value);if(!Number.isInteger(hours)||hours<1){toast('请输入大于 0 的整数小时','circle-alert');return}reminderByStore[currentStore]={enabled:true,hours};showReminder();toast('当前店铺钉钉提醒已保存','bell-ring')};
+      $('#disableReminder').onclick=()=>{const state=reminderByStore[currentStore]||{};reminderByStore[currentStore]={...state,enabled:false};showReminder();toast('当前店铺钉钉提醒已关闭','bell-off')};
+
+      $$('.more-input').forEach(input=>input.oninput=countMore);
+      $('#moreBtn').onclick=e=>{if(e.currentTarget.disabled)return;e.stopPropagation();closePops('morePop');$('#morePop').classList.toggle('open')};
+      $('#searchBtn').onclick=()=>{if($('#dateFrom').value&&$('#dateTo').value&&$('#dateFrom').value>$('#dateTo').value){toast('开始日期不能晚于结束日期','circle-alert');return}$('#morePop').classList.remove('open');$('#moreBtn').classList.toggle('applied',$('#moreBtn').disabled===false&&$$('.more-input').some(input=>input.value.trim()));toast('筛选条件已应用，列表已回到第 1 页','search')};
+      $('#keyword').onkeydown=e=>{if(e.key==='Enter')$('#searchBtn').click()};
+      $('#resetBtn').onclick=()=>resetFilters();
+      $$('[data-zone]').forEach(button=>button.onclick=()=>{$$('[data-zone]').forEach(x=>x.classList.toggle('active',x===button));toast(`已切换为${button.dataset.zone}时间`)});
+      $('#syncBtn').onclick=()=>{const button=$('#syncBtn'),icon=button.querySelector('svg,i');icon?.classList.add('spin');button.disabled=true;setTimeout(()=>{icon?.classList.remove('spin');button.disabled=false;toast('同步完成：2 个邮箱成功，0 个失败','refresh-cw')},900)};
+
+      $$('.folder').forEach(button=>button.onclick=()=>switchFolder(button));
+      $$('.conv').forEach(row=>{row.onclick=e=>{if(e.target.matches('input'))return;loadConversation(row)};row.querySelector('input').onchange=updateSelection});
+      $('#allConvs').onchange=e=>{visibleRows().forEach(row=>row.querySelector('input').checked=e.target.checked);updateSelection()};
+      $$('[data-action]').forEach(button=>button.onclick=()=>{const selected=$$('.conv-check input:checked').map(input=>input.closest('.conv')).filter(row=>row.style.display!=='none'),rows=selected.length?selected:[$('.conv.active')].filter(Boolean),label={read:'已读/未读',noreply:'无需回复',platform:'已在平台回复'}[button.dataset.action];rows.forEach(row=>{if(button.dataset.action==='read'){const dot=row.querySelector('.dot');if(dot)dot.style.visibility=dot.style.visibility==='hidden'?'visible':'hidden'}else{const status=row.querySelector('.status');status.className=button.dataset.action==='platform'?'status platform':'status';status.textContent=label;row.querySelector('.countdown,.timeout')?.remove();row.dataset.countdown=''}});sortRows();toast(selected.length?`已批量标记 ${selected.length} 封邮件：${label}`:`当前邮件已标记：${label}`)});
+
+      $('#sortField').onchange=sortRows;
+      $('#sortDirection').onclick=()=>{const button=$('#sortDirection'),desc=button.dataset.dir!=='desc';button.dataset.dir=desc?'desc':'asc';button.innerHTML=desc?'<i data-lucide="arrow-down"></i>降序':'<i data-lucide="arrow-up"></i>升序';icons();sortRows()};
+
+      $('#addLabelBtn').onclick=()=>{editingLabel=null;$('#labelModalTitle').textContent='新增标签';$('#labelName').value='';$('#labelError').textContent='';open('labelModal')};
+      $('#renameLabelBtn').onclick=()=>{close('labelMenu');$('#labelModalTitle').textContent='重命名标签';$('#labelName').value=editingLabel||'';$('#labelError').textContent='';open('labelModal')};
+      $('#saveLabel').onclick=()=>{const name=$('#labelName').value.trim();if(!name){$('#labelError').textContent='请输入标签名称';return}if(labels.some(label=>label===name&&label!==editingLabel)){$('#labelError').textContent='标签名称已存在';return}if(editingLabel){const index=labels.indexOf(editingLabel);labels[index]=name;Object.values(labelAssignments).forEach(map=>Object.keys(map).forEach(id=>{if(map[id]===editingLabel)map[id]=name}));if(activeLabel===editingLabel)activeLabel=name;toast('标签已重命名','pencil')}else{labels.push(name);toast('标签已新增','tag')}editingLabel=null;close('labelModal');renderLabels();renderRows()};
+      $('#deleteLabelBtn').onclick=()=>{close('labelMenu');$('#labelDeleteText').textContent=`确认删除标签“${editingLabel}”吗？`;open('labelDeleteModal')};
+      $('#confirmLabelDelete').onclick=()=>{const index=labels.indexOf(editingLabel);if(index>=0)labels.splice(index,1);Object.values(labelAssignments).forEach(map=>Object.keys(map).forEach(id=>{if(map[id]===editingLabel)delete map[id]}));if(activeLabel===editingLabel)activeLabel=null;editingLabel=null;close('labelDeleteModal');renderLabels();renderRows();toast('标签已删除，邮件保留不变','trash-2')};
+      $('#emailMoreBtn').onclick=e=>{e.stopPropagation();renderEmailLabelOptions();closePops('emailMenu');$('#emailMenu').classList.toggle('open')};
+
+      $('#deleteMailBtn').onclick=()=>{if(currentFolder==='aggregate')return;const selected=$$('.conv-check input:checked').filter(input=>input.closest('.conv').style.display!=='none'),count=selected.length||1;$('#mailDeleteText').textContent=count>1?`确认删除选中的 ${count} 封邮件吗？`:'确认删除当前邮件吗？';open('mailDeleteModal')};
+      $('#confirmMailDelete').onclick=()=>{const selected=$$('.conv-check input:checked').map(input=>input.closest('.conv')).filter(row=>row.style.display!=='none'),targets=selected.length?selected:[$('.conv.active')].filter(Boolean),deleted=deletedByFolder[currentFolder];targets.forEach(row=>deleted.add(row.dataset.conv));close('mailDeleteModal');renderRows();const next=visibleRows()[0];if(next)loadConversation(next);toast(`已删除 ${targets.length} 封邮件，删除后不可恢复`,'trash-2')};
+
+      $('#translateMessageBtn').onclick=()=>{const button=$('#translateMessageBtn'),id=$('.conv.active')?.dataset.conv;if(!id)return;const translated=button.dataset.translated==='true';$('#message').textContent=translated?conversations[id].message:conversations[id].zh;button.dataset.translated=translated?'false':'true';button.innerHTML=translated?'<i data-lucide="languages"></i>翻译成中文':'<i data-lucide="rotate-ccw"></i>查看原文';icons()};
+      $('#replyTranslate').onclick=()=>{const textarea=$('#replyText'),source=textarea.value.trim();if(!source){toast('请先输入需要翻译的回复内容','circle-alert');return}const english='Dear customer, we have received your message and will assist you as soon as possible.';textarea.value=`${source}\n${english}`;textarea.focus();toast('英文翻译已另起一行追加','languages')};
+
+      bindUpload('#replyUpload','#replyFile','#replyFiles');bindUpload('#composeUpload','#composeFile','#composeFiles');
+      $('#saveDraft').onclick=()=>toast('会话回复草稿已保存，可在草稿箱继续编辑','save');
+      $('#sendReply').onclick=()=>{const text=$('#replyText').value.trim();if(!text){toast('请输入回复内容','circle-alert');return}const button=$('#sendReply');button.disabled=true;button.innerHTML='<i data-lucide="loader-circle" class="spin"></i>发送中';icons();setTimeout(()=>{const item=document.createElement('div');item.className='mail-item outgoing';item.innerHTML='<div class="mail-meta">客服 · 刚刚</div><div class="bubble"></div>';item.querySelector('.bubble').textContent=text;$('#thread').append(item);$('#replyText').value='';$('#replyFiles').innerHTML='';button.disabled=false;button.innerHTML='<i data-lucide="send"></i>发送';const row=$('.conv.active'),status=row?.querySelector('.status');if(status){status.className='status replied';status.textContent='已回复';row.querySelector('.countdown,.timeout')?.remove();row.dataset.countdown=''}icons();toast('发送成功，会话状态已更新为“已回复”','send')},700)};
+
+      const prepareCompose=(mode)=>{const reply=mode==='reply';$('#composeTitle').textContent=reply?'回复邮件':'新建邮件';$('#composeTo').value=reply?$('#threadEmail').textContent.trim():'';$('#composeSubject').value=reply?`回复${$('#threadSubject').textContent.trim()}`:'';$('#composeBody').value='';$('#composeFiles').innerHTML='';open('composeModal')};
+      $('#newMailBtn').onclick=()=>prepareCompose('new');
+      $('#originalReplyButton').onclick=()=>prepareCompose('reply');
+      $('#saveCompose').onclick=()=>{close('composeModal');toast('邮件草稿已保存，可在当前邮箱草稿箱查看','save')};
+      $('#sendCompose').onclick=()=>{if(!$('#composeTo').value.trim()||!$('#composeSubject').value.trim()||!$('#composeBody').value.trim()){toast('请填写收件人、主题和正文','circle-alert');return}const button=$('#sendCompose');button.disabled=true;setTimeout(()=>{button.disabled=false;close('composeModal');toast('邮件发送成功，已写入发件箱','send')},700)};
+
+      const money=cents=>`USD ${(cents/100).toFixed(2)}`;
+      const updateRefundView=()=>{const remaining=totalCents-refundedCents;$('#refundPaid').textContent=money(refundedCents);$('#refundRemaining').textContent=money(remaining);$('#orderRefunded').textContent=money(refundedCents);$('#refundAmount').max=(remaining/100).toFixed(2);$('#refundAmount').value='';$('#refundError').textContent='';if(refundedCents>0){$('#refundTag').style.display='inline-flex';$('#orderStatus').textContent='已退款'}$('#refundItem').disabled=remaining===0;$('#refundItem').textContent=remaining===0?'已全额退款':(refundedCents?'继续退款':'退款')};
+      $('#orderAction').onclick=e=>{e.stopPropagation();closePops('orderMenu');$('#orderMenu').classList.toggle('open')};
+      $('#refundItem').onclick=()=>{if(totalCents-refundedCents<=0)return;closePops();updateRefundView();open('refundModal')};
+      $('#confirmRefund').onclick=()=>{const amount=Math.round(Number($('#refundAmount').value)*100),remaining=totalCents-refundedCents;if(!Number.isFinite(amount)||amount<=0){$('#refundError').textContent='请输入大于 0 的退款金额';return}if(amount>remaining){$('#refundError').textContent=`本次退款不可超过剩余可退金额 ${money(remaining)}`;return}const button=$('#confirmRefund');button.disabled=true;button.textContent='退款中';setTimeout(()=>{refundedCents+=amount;button.disabled=false;button.textContent='确认退款';close('refundModal');updateRefundView();toast(`退款成功，本次退款 ${money(amount)}`)},700)};
+      $('#mobileOrder').onclick=()=>$('#orderPanel').classList.toggle('mobile-open');
+
+      $$('[data-close]').forEach(button=>button.onclick=()=>close(button.dataset.close));
+      $$('.overlay').forEach(overlay=>overlay.onclick=e=>{if(e.target===overlay)close(overlay.id)});
+      document.addEventListener('click',e=>{if(!root.contains(e.target))return;if(!e.target.closest('.popover')&&!e.target.closest('#storeBtn,#moreBtn,#reminderBtn,#orderAction,#emailMoreBtn,[data-label-manage],#mailMenu')){closePops();$('#subMenu').classList.remove('open')}});
+      document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const modal=$$('.overlay.open').at(-1);if(modal)close(modal.id);else closePops()});
+
+      renderOwnerStores($('.owner-option.active').dataset.owner);countMore();renderLabels();renderRows();updateSortAvailability();updateRefundView();icons();
+    })();
+  </script>
+  <style id="p0-overrides">
+    #qx-mail-prototype [data-folder="draft"],
+    #qx-mail-prototype [data-folder="qa"],
+    #qx-mail-prototype #reminderBtn,
+    #qx-mail-prototype #reminderPop,
+    #qx-mail-prototype #emailMoreBtn,
+    #qx-mail-prototype #emailMenu,
+    #qx-mail-prototype #tagSection,
+    #qx-mail-prototype #translateMessageBtn,
+    #qx-mail-prototype #replyLanguage,
+    #qx-mail-prototype #saveDraft,
+    #qx-mail-prototype #autosave,
+    #qx-mail-prototype #saveCompose,
+    #qx-mail-prototype #composeModal .autosave,
+    #qx-mail-prototype #refundModal,
+    #qx-mail-prototype .mailbox-status{display:none!important}
+    #qx-mail-prototype.p0-concrete [data-action="noreply"],
+    #qx-mail-prototype.p0-concrete [data-action="platform"],
+    #qx-mail-prototype.p0-concrete .conv-meta .status,
+    #qx-mail-prototype.p0-concrete .conv-meta .countdown,
+    #qx-mail-prototype.p0-concrete .conv-meta .timeout{display:none!important}
+    #qx-mail-prototype.p0-concrete .conv{min-height:76px}
+    #qx-mail-prototype .p0-translation-toggle{margin-left:8px;padding:0;border:0;background:transparent;color:var(--brand);font-size:12px;vertical-align:baseline}
+    #qx-mail-prototype .p0-translation-toggle:hover{text-decoration:underline}
+    #qx-mail-prototype .p0-translation{max-width:78%;margin-top:8px;padding:10px 12px;border-left:3px solid var(--brand);border-radius:3px;background:var(--brand-soft);color:#3f4a60;white-space:pre-wrap}
+    #qx-mail-prototype .p0-translation:before{content:"中文译文";display:block;margin-bottom:5px;color:var(--brand);font-size:12px;font-weight:500}
+    #qx-mail-prototype .mail-grid.mail-file .p0-translation-toggle,
+    #qx-mail-prototype .mail-grid.mail-file .p0-translation{display:none!important}
+    #qx-mail-prototype .p0-compose-label{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #qx-mail-prototype .p0-compose-label .btn{flex:0 0 auto}
+    #qx-mail-prototype .more-pop{width:290px}
+    #qx-mail-prototype .more-pop .filter-grid{grid-template-columns:1fr}
+    #qx-mail-prototype .mail-grid.p0-sent .mail-item:not(.outgoing){display:none!important}
+    #qx-mail-prototype .mail-grid.p0-sent .mail-item.outgoing{display:flex!important;align-items:flex-start}
+    #qx-mail-prototype .mail-grid.p0-sent .mail-item.outgoing .bubble{max-width:none;padding:0;background:transparent}
+    #qx-mail-prototype .mail-grid.p0-sent .original-reply{display:none!important}
+    #qx-mail-prototype .p0-list-empty{display:none;padding:48px 16px;text-align:center;color:var(--muted)}
+    #qx-mail-prototype .p0-list-empty.show{display:block}
+  </style>
+  <script>
+    (()=>{
+      const root=document.getElementById('qx-mail-prototype');if(!root)return;
+      const one=selector=>root.querySelector(selector),all=selector=>Array.from(root.querySelectorAll(selector));
+      const icons=()=>window.lucide?.createIcons?.({attrs:{width:16,height:16,'stroke-width':1.8}});
+      const p0Toast=(message,icon='circle-check')=>{const stack=one('#toasts');if(!stack)return;const el=document.createElement('div');el.className='toast';el.innerHTML=`<i data-lucide="${icon}"></i><span>${message}</span>`;stack.append(el);icons();setTimeout(()=>el.remove(),2600)};
+
+      all('[data-folder="draft"],[data-folder="qa"],#replyLanguage,#saveDraft,#autosave,#saveCompose,#composeModal .autosave,#refundModal,#labelModal,#labelDeleteModal').forEach(node=>node.remove());
+      all('.mailbox-status').forEach(node=>node.remove());
+      const mailboxTitles=all('.mailbox-title');mailboxTitles.slice(1).forEach(node=>node.remove());
+      all('.order-heading .link').forEach(node=>node.remove());
+      all('#composeModal option').filter(node=>node.textContent.includes('service@ptaesos.com')).forEach(node=>node.remove());
+      const currentStoreMailCount=all('.store-option small').find(node=>node.textContent.includes('美国站 · 2 个可用邮箱'));if(currentStoreMailCount)currentStoreMailCount.textContent='美国站 · 1 个可用邮箱';
+      one('script[data-retired="legacy-template-prototype"]')?.remove();
+
+      const refundTag=one('#refundTag');refundTag?.remove();
+      const refundAmountLabel=all('.kv dt').find(node=>node.textContent.trim()==='已退款金额');if(refundAmountLabel){refundAmountLabel.nextElementSibling?.remove();refundAmountLabel.remove()}
+      const outboundLabel=all('.kv dt').find(node=>node.textContent.trim()==='出库单号'),outboundValue=outboundLabel?.nextElementSibling;if(outboundValue){const link=outboundValue.querySelector('a');if(link)outboundValue.textContent=link.textContent}
+
+      const translations={andrea:'我还没有收到这个订单的退货标签，请发送给我。',john:'物流信息已经几天没有更新了，可以帮我查看一下吗？',michael:'我的包裹上周就应该送达，但我至今仍未收到。',meghan:'请以附件形式重新发送退货标签。',cindy:'承运商显示已经送达，但我的地址并没有收到包裹。',matt:'可以确认一下这件夹克是否防水吗？'};
+      const incoming=one('.mail-item:not(.outgoing)'),meta=incoming?.querySelector('.mail-meta'),bubble=incoming?.querySelector('.bubble');
+      let translateToggle=null,translationPanel=null;
+      if(incoming&&meta&&bubble){
+        translateToggle=document.createElement('button');translateToggle.type='button';translateToggle.className='p0-translation-toggle';translateToggle.textContent='查看翻译';
+        translationPanel=document.createElement('div');translationPanel.className='p0-translation';translationPanel.hidden=true;
+        meta.append(translateToggle);bubble.insertAdjacentElement('afterend',translationPanel);
+      }
+      const syncTranslation=()=>{if(!translateToggle||!translationPanel)return;const aggregate=activeFolder()==='aggregate',id=one('.conv.active')?.dataset.conv;translateToggle.hidden=!aggregate;translateToggle.textContent='查看翻译';translationPanel.hidden=true;translationPanel.textContent=translations[id]||'暂无译文'};
+      if(translateToggle)translateToggle.onclick=()=>{if(activeFolder()!=='aggregate')return;const showing=!translationPanel.hidden;translationPanel.hidden=showing;translateToggle.textContent=showing?'查看翻译':'收起翻译'};
+
+      const appendEnglish=textarea=>{const source=textarea?.value.trim();if(!source){p0Toast('请先输入需要翻译的中文内容','circle-alert');return}const english='Dear customer, we have received your message and will assist you as soon as possible.';if(source.includes(english)){p0Toast('输入框中已包含英文译文','languages');return}textarea.value=`${source}\n\n${english}`;textarea.focus();p0Toast('英文译文已追加在中文后方，仍需点击发送','languages')};
+      const replyTranslate=one('#replyTranslate');if(replyTranslate)replyTranslate.onclick=()=>appendEnglish(one('#replyText'));
+      const composeBody=one('#composeBody'),composeBodyField=composeBody?.closest('.field');
+      if(composeBody&&composeBodyField){
+        const bodyLabel=composeBodyField.querySelector('label'),labelRow=document.createElement('div');labelRow.className='p0-compose-label';
+        const composeTranslate=document.createElement('button');composeTranslate.className='btn sm';composeTranslate.id='composeTranslate';composeTranslate.type='button';composeTranslate.innerHTML='<i data-lucide="languages"></i>翻译成英文';
+        if(bodyLabel){bodyLabel.replaceWith(labelRow);labelRow.append(bodyLabel,composeTranslate)}else composeBodyField.insertBefore(composeTranslate,composeBody);
+        composeTranslate.onclick=()=>appendEnglish(composeBody);
+      }
+
+      const activeFolder=()=>one('.folder.active')?.dataset.folder||'aggregate';
+      const deleted={inbox:new Set(),sent:new Set(),station:new Set(),amazon:new Set()},aggregateRemoved=new Set();
+      const listBody=one('.list-body'),emptyState=document.createElement('div');emptyState.className='p0-list-empty';emptyState.innerHTML='<i data-lucide="inbox"></i><p>暂无邮件</p>';listBody?.append(emptyState);
+      const visibleRows=()=>all('.conv').filter(row=>row.style.display!=='none');
+      const renderP0Rows=()=>{const folder=activeFolder(),removed=deleted[folder]||new Set();all('.conv').forEach(row=>{const hide=folder==='aggregate'?aggregateRemoved.has(row.dataset.conv):removed.has(row.dataset.conv);row.style.display=hide?'none':'';if(hide)row.querySelector('input').checked=false});const rows=visibleRows();emptyState.classList.toggle('show',rows.length===0);emptyState.querySelector('p').textContent=folder==='aggregate'?'暂无可展示的站内信会话':'暂无邮件';one('#allConvs').checked=false;const selection=one('#selection');if(selection){selection.textContent='已选 0 项';selection.classList.remove('show')}};
+      const applyMode=()=>{const folder=activeFolder(),aggregate=folder==='aggregate',grid=one('.mail-grid');root.classList.toggle('p0-concrete',!aggregate);grid?.classList.toggle('p0-sent',folder==='sent');const status=one('#status'),more=one('#moreBtn');if(status){status.disabled=!aggregate;if(!aggregate)status.selectedIndex=0}if(more){more.disabled=!aggregate;more.classList.toggle('applied',aggregate&&Number(one('#moreCount')?.textContent)>0)}const replyButton=one('#originalReply');if(replyButton)replyButton.style.display=['inbox','station','amazon'].includes(folder)?'':'none';renderP0Rows();syncTranslation();icons()};
+      all('.folder').forEach(node=>node.addEventListener('click',()=>setTimeout(applyMode,0)));
+      all('.conv').forEach(node=>node.addEventListener('click',()=>setTimeout(syncTranslation,0)));
+
+      let pendingDelete=[];
+      const deleteButton=one('#deleteMailBtn'),deleteModal=one('#mailDeleteModal'),deleteText=one('#mailDeleteText'),deleteNote=deleteModal?.querySelector('.confirm p');
+      if(deleteNote)deleteNote.textContent='将从原邮箱中删除邮件，删除后不可恢复。顶部站内信邮件会话不支持直接删除。';
+      if(deleteButton)deleteButton.onclick=()=>{const folder=activeFolder();if(folder==='aggregate')return;const selected=all('.conv-check input:checked').map(input=>input.closest('.conv')).filter(row=>row.style.display!=='none');pendingDelete=selected.length?selected:[one('.conv.active')].filter(Boolean);if(!pendingDelete.length)return;deleteText.textContent=pendingDelete.length>1?`将从原邮箱中删除选中的 ${pendingDelete.length} 封邮件，删除后不可恢复`:'将从原邮箱中删除邮件，删除后不可恢复';deleteModal?.classList.add('open')};
+      const confirmDelete=one('#confirmMailDelete');if(confirmDelete)confirmDelete.onclick=()=>{const folder=activeFolder(),removed=deleted[folder];if(!removed)return;pendingDelete.forEach(row=>{removed.add(row.dataset.conv);if(folder==='station')aggregateRemoved.add(row.dataset.conv)});deleteModal?.classList.remove('open');const count=pendingDelete.length;pendingDelete=[];renderP0Rows();const next=visibleRows()[0];if(next&&!next.classList.contains('active'))next.click();p0Toast(`已从原邮箱删除 ${count} 封邮件，删除后不可恢复`,'trash-2')};
+
+      const syncButton=one('#syncBtn');if(syncButton)syncButton.onclick=()=>{const icon=syncButton.querySelector('svg,i');icon?.classList.add('spin');syncButton.disabled=true;setTimeout(()=>{icon?.classList.remove('spin');syncButton.disabled=false;p0Toast('同步完成：1 个邮箱成功，0 个失败','refresh-cw')},900)};
+
+      const openP0Link=(url,label)=>{window.open(url,'_blank','noopener,noreferrer');p0Toast(`原型演示：已在新窗口打开${label}`,'external-link')};
+      const orderLink=one('.order-no');if(orderLink){const orderUrl='https://example.com/qixing-oms/order-detail?amazonOrderId=112-5136312-1671440';orderLink.href=orderUrl;orderLink.target='_blank';orderLink.rel='noopener noreferrer';orderLink.removeAttribute('onclick');orderLink.onclick=event=>{event.preventDefault();openP0Link(orderUrl,'七星订单详情')}};
+      const asinSpan=all('.product-meta span').find(node=>node.textContent.includes('ASIN：'));if(asinSpan){const asinUrl='https://www.amazon.com/dp/B0GY4CWR6K';asinSpan.innerHTML='ASIN：<a id="p0AsinLink" href="https://www.amazon.com/dp/B0GY4CWR6K" target="_blank" rel="noopener noreferrer">B0GY4CWR6K</a>';one('#p0AsinLink').onclick=event=>{event.preventDefault();openP0Link(asinUrl,'亚马逊商品页')}};
+      const refundItem=one('#refundItem');if(refundItem){refundItem.disabled=false;refundItem.innerHTML='<i data-lucide="external-link"></i>退款';refundItem.onclick=()=>{one('#orderMenu')?.classList.remove('open');openP0Link('https://sellercentral.amazon.com/orders-v3/order/112-5136312-1671440/refund','Seller Central 退款操作页')}};
+
+      applyMode();icons();
+    })();
+  </script>
+</div>
+
+<script src="https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js"></script>
+<script src="https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js"></script>
+<script>
+(() => {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set(["top", "right", "bottom", "left"]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =>
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest("[data-tooltip]")
+      : null;
+  const containsTarget = (trigger, target) =>
+    target?.nodeType != null && trigger.contains(target);
+  const getContent = (trigger) =>
+    trigger.getAttribute("data-tooltip")?.trim() ?? "";
+  const getPlacement = (trigger) => {
+    const placement = trigger.getAttribute("data-tooltip-placement");
+    return tooltipPlacements.has(placement) ? placement : "top";
+  };
+  const getTooltip = () => {
+    if (tooltip == null) {
+      tooltip = document.createElement("div");
+      tooltip.id = tooltipId;
+      tooltip.className = "tooltip";
+      tooltip.setAttribute("role", "tooltip");
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) => {
+    const ids = new Set(
+      (trigger.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute("aria-describedby");
+    } else {
+      trigger.setAttribute("aria-describedby", [...ids].join(" "));
+    }
+  };
+  const clearOpenTimeout = () => {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) => {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) => {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              "--tooltip-available-width",
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              "--tooltip-available-height",
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: "fixed",
+    })
+      .then(({ x, y }) => {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = "visible";
+      })
+      .catch(() => {
+        if (activeTrigger === trigger && request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) => {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = "hidden";
+    floating.style.transform = "translate(0, 0)";
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () => {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) => {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() < skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() => {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(":focus-visible")) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) => {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () => {
+    closeTooltip(false);
+    document.removeEventListener("pointerover", handlePointerOpen);
+    document.removeEventListener("pointerout", handleLeave);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleLeave);
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("contextmenu", handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener("pointerover", handlePointerOpen);
+  document.addEventListener("pointerout", handleLeave);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleLeave);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("contextmenu", handleContextMenu);
+  window.addEventListener("pagehide", destroy, { once: true });
+})();
+</script>
+
+<!-- ReplyFlow Stage A: freeze the original workbench before Agent integration. -->
+<script id="replyflow-stage-a">
+(() => {
+  const root = document.getElementById('qx-mail-prototype');
+  if (!root) return;
+
+  // Only these interactions remain live in the baseline: conversation selection,
+  // the reply editor, and native scrolling. Everything else stays visual-only.
+  const staticSelector = [
+    '.menu-item', '.sub-item', '.side-search input',
+    '#storeBtn', '#unread', '#status', '#searchType', '#keyword', '#dateFrom', '#dateTo',
+    '#attachmentFilter', '#moreBtn', '#searchBtn', '#resetBtn', '[data-zone]', '#reminderBtn', '#syncBtn',
+    '.owner-option', '.store-option', '#newMailBtn', '.folder', '.mailbox-title',
+    '#allConvs', '.conv-check input', '#sortField', '#sortDirection', '.page-num',
+    '[data-action]', '#deleteMailBtn', '#translateMessageBtn', '#mobileOrder', '#emailMoreBtn',
+    '#replyLanguage', '#replyTranslate', '#replyUpload', '#replyFile', '#saveDraft', '#sendReply',
+    '#originalReplyButton', '.order-tab', '.order-heading .link', '#orderAction', '#refundItem',
+    '#confirmRefund', '[data-close]', '.mail-attachment',
+    '#translateToggle', '.p0-translation-toggle', '.label-folder', '.label-manage', '.tag-add',
+    '.more-input', '#reminderHours', '#disableReminder', '#saveReminder',
+    '#composeModal button', '#composeModal input', '#composeModal textarea', '#composeModal select',
+    '#labelModal button', '#labelModal input', '#labelDeleteModal button', '#mailDeleteModal button',
+    '#labelMenu button', '#emailMenu button'
+  ].join(',');
+
+  root.querySelectorAll(staticSelector).forEach((element) => {
+    element.dataset.stageAStatic = 'true';
+    element.setAttribute('aria-disabled', 'true');
+    if (element.matches('button, input, select, textarea, a')) element.tabIndex = -1;
+  });
+
+  const isStatic = (target) => target?.closest?.('[data-stage-a-static="true"]');
+
+  // Capture before the original prototype handlers so static controls cannot
+  // change folders, filters, labels, orders, or external state in Stage A.
+  root.addEventListener('click', (event) => {
+    const target = isStatic(event.target);
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }, true);
+
+  root.addEventListener('change', (event) => {
+    const target = isStatic(event.target);
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }, true);
+
+  root.addEventListener('keydown', (event) => {
+    const target = isStatic(event.target);
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }, true);
+
+  root.querySelectorAll('a:not(.conv)').forEach((link) => {
+    link.dataset.stageAStatic = 'true';
+    link.setAttribute('aria-disabled', 'true');
+    link.tabIndex = -1;
+  });
+
+  document.title = '亚马逊客服邮件工作台 · 阶段 A 基线';
+  root.dataset.stage = 'a-baseline';
+})();
+</script>
+<script id="codex-visualization-lucide" async src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+<script>
+(() => {
+  const initialize = () => {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById("codex-visualization-lucide")
+    ?.addEventListener("load", initialize, { once: true });
+})();
+</script>
+
+</body>
+</html>

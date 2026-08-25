@@ -591,9 +591,38 @@ python -m streamlit run app.py
 
 **当前验收记录**：阶段 12 的原控制台实现已被阶段 13 的原型复刻页面替换；保留邮件接入、订单上下文、L1/L2/L3、幂等和本地 outbox 能力。
 
-## 阶段 13：原邮件工作台复刻与 Coze 单模式 Agent UI
+## 阶段 A：原邮件工作台静态基线（当前完成阶段）
+
+**目标**：先把原始亚马逊客服邮件 HTML 作为可核对的主展示页面，暂不接入 Agent。
+
+**执行要求**：
+
+1. 使用用户提供的 `0730亚马逊客服邮件能力建设原型.html` 作为页面基线，不用 Streamlit 重新拼接页面 DOM。
+2. 保留原页面 6 条静态会话和原型订单信息；不把后端 30 封测试邮件全部放入首页。
+3. 只保留点击会话切换详情、订单匹配联动、回复输入框输入/编辑/清空和区域滚动。
+4. 导航、筛选、文件夹、排序、搜索、分页、时间切换、提醒、同步、订单操作、外链、弹窗、保存草稿和发送均只做视觉展示。
+5. 不显示智能客服开关、AI 风险标签、模拟邮件台、Coze 错误或任何阶段 B 控件。
+
+**输出文件**：
+
+- `prototype/stage_a/amazon_mail_stage_a.html`
+- `prototype/stage_a/amazon_mail_stage_a-标注版.html`
+- `prototype/stage_a/annotations.json`
+- `docs/stage_a_interaction_scope.md`
+
+**验收**：启动 `python -m http.server 8510 --bind 127.0.0.1 --directory prototype/stage_a`，访问 `http://127.0.0.1:8510/amazon_mail_stage_a.html`；确认页面加载、邮件切换、订单联动、回复输入正常，其他控件不改变业务状态。
+
+**Git**：阶段 A 完成后必须更新 `PROJECT_STATUS.md`，运行测试，提交并执行 `git push origin main`。
+
+**当前状态**：已完成。阶段 B 未开始，必须等待用户明确指令。
+
+---
+
+## 阶段 13：原邮件工作台复刻与 Coze 单模式 Agent UI（阶段 B 规划）
 
 **目标**：在不新建客服系统的前提下，把 Agent 接入原 HTML 邮件工作台骨架。
+
+**执行状态**：本节是阶段 B 规划。阶段 A 完成后暂停，只有用户明确要求“继续阶段 B”时才执行。
 
 **执行要求**：
 
@@ -606,7 +635,7 @@ python -m streamlit run app.py
 7. 页面底部“模拟邮件台”打开浮窗；选择订单后即时展示摘要，提交邮件后新会话置顶并自动选中。
 8. 使用 `st.container(border=True)` 或独立局部 HTML 卡片，不使用原始 HTML 包裹后续 Streamlit 组件，避免空白遮罩。
 
-**验收结果**：桌面视口已验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；全量测试 `87 passed`。
+**历史验收结果**：旧版 Streamlit Agent 工作台曾验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；这不代表阶段 B 的 HTML 增量接入已经开始。
 
 **Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"; git push origin main`
 

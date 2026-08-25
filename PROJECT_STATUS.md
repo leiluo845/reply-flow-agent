@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 13——原亚马逊客服邮件工作台复刻与 Coze 单模式 Agent 接入 UI 已完成；智能客服开关、模拟邮件台、L1/L2/L3 展示和 Coze 失败提示已通过浏览器验收
+阶段 A——原亚马逊客服邮件工作台静态基线已完成；阶段 B 尚未开始。阶段 A 只保留会话切换、订单联动、回复输入和原生滚动，不调用 Coze、不显示 Agent 控件。
 
 ## 已完成
 
@@ -98,6 +98,8 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 已完成阶段 13 Agent 交互：关闭智能客服时模拟邮件只接收不调用 Coze；开启后自动调用 Coze，L1 自动回复、L2 草稿待确认、L3 高风险核对；Coze 失败直接显示 AI 处理失败，不回退 Demo Router。
 - 已补充 AI 失败重试：FAILED 会话显示“重试 AI”，开启智能客服后可重新调用 Coze；失败会话允许新 interactive task，但 source_message_id、邮件记录和 outbox 仍保持幂等。
 - 新增页面规范 `docs/ui_prototype_spec.md`，规定原 HTML 骨架、交互边界、风险标签、订单摘要和 Streamlit + CSS/局部 HTML 实现约束。
+- 已完成阶段 A 静态基线：复制原 HTML 到 `prototype/stage_a/amazon_mail_stage_a.html`，冻结无关控件为静态展示；保留会话切换、订单联动、回复输入和滚动。
+- 已生成阶段 A 标注版 `prototype/stage_a/amazon_mail_stage_a-标注版.html`、标注数据 `prototype/stage_a/annotations.json` 和交互范围文档 `docs/stage_a_interaction_scope.md`。
 
 ## 本轮修改
 
@@ -158,6 +160,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
 - 结果：通过，`88 passed`；包含 Coze 失败重试且不重复创建邮件的回归测试。
 - 浏览器验收：桌面视口下原 HTML 邮件工作台骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败提示通过；关闭开关不调用 AI，开启后失败不回退本地规则。
+- 阶段 A 浏览器验收：`http://127.0.0.1:8510/amazon_mail_stage_a.html` 加载成功；点击会话可切换详情和订单匹配状态；回复输入框可编辑；筛选、文件夹、订单操作、外链等控件无状态变化。
 - 命令：使用本机 `.env` 调用 `CozeClient.analyze(...)`（虚构物流邮件）
 - 结果：通过，`is_buyer_message=true`、`intent=shipping_status`、`order_id=ORD-1001`、`confidence=1.0`。
 - 命令：使用本机 `.env` 调用 `CozeClient.draft(...)`（虚构订单与物流事实）
@@ -173,8 +176,8 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 下一步
 
-- 阶段 12 浏览器验收已覆盖：浮动按钮打开浮窗、订单选择即时摘要、提交后新会话置顶并自动选中、右侧订单信息联动，以及原有 L1/L2/L3、核对和幂等流程。
-- 下一步补充阶段 13 的端到端确认、核对、幂等和审计测试；`.env` 和 Coze PAT 继续只保留在本机。
+- 阶段 B 尚未开始；必须在用户明确确认后，才在阶段 A HTML 基线上加入智能客服开关和 Agent 增量能力。
+- `.env` 和 Coze PAT 继续只保留在本机。
 - 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；8 条案例评测完成前，不得声称完整 Interactive POC 已通过。
 - 8 条运行记录完成前，只能声称“Coze 连通性试运行通过”，不能声称完整 Coze POC 评测通过。
 
