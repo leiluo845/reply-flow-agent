@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 A——原亚马逊客服邮件工作台静态基线已完成；阶段 B 尚未开始。阶段 A 只保留会话切换、订单联动、回复输入和原生滚动，不调用 Coze、不显示 Agent 控件。
+阶段 B——原 HTML 邮件工作台已接入全局智能客服批处理、进度条、新邮件自动入队、失败重试和“撤回上一轮处理（演示）”；浏览器验收已完成，待 GitHub 推送。
 
 ## 已完成
 
@@ -100,6 +100,11 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 新增页面规范 `docs/ui_prototype_spec.md`，规定原 HTML 骨架、交互边界、风险标签、订单摘要和 Streamlit + CSS/局部 HTML 实现约束。
 - 已完成阶段 A 静态基线：复制原 HTML 到 `prototype/stage_a/amazon_mail_stage_a.html`，冻结无关控件为静态展示；保留会话切换、订单联动、回复输入和滚动。
 - 已生成阶段 A 标注版 `prototype/stage_a/amazon_mail_stage_a-标注版.html`、标注数据 `prototype/stage_a/annotations.json` 和交互范围文档 `docs/stage_a_interaction_scope.md`。
+- 已创建阶段 B HTML 增量页面 `prototype/stage_b/index.html` 和本地桥接服务 `stage_b_server.py`。
+- 阶段 B 全局开关开启前显示待处理数量；批量任务显示进度、当前序号和 L1/L2/L3/失败计数。
+- 阶段 B 开关开启时新邮件自动入队；关闭后不启动排队中的新邮件，当前已开始任务允许完成。
+- 阶段 B 动态模拟邮件写入本地 SQLite，服务重启可恢复；新增 `stage_b_cases` 和 `stage_b_rollback_events` 表。
+- 阶段 B 增加演示撤回：只允许撤回最近已完成批次，批次处理中禁用，回退本地草稿/模拟发件箱/线程状态并保留回退记录。
 
 ## 本轮修改
 
@@ -158,9 +163,11 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
 - 结果：通过，浏览器访问 `http://localhost:8506`；已验收一级自动回复、二级确认、三级核对、重复点击幂等和本地模拟发件箱计数变化。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
-- 结果：通过，`88 passed`；包含 Coze 失败重试且不重复创建邮件的回归测试。
+- 结果：通过，`91 passed`；包含 Coze 失败重试、阶段 B 全局批处理持久化、队列关闭和演示撤回回退测试。
 - 浏览器验收：桌面视口下原 HTML 邮件工作台骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败提示通过；关闭开关不调用 AI，开启后失败不回退本地规则。
 - 阶段 A 浏览器验收：`http://127.0.0.1:8510/amazon_mail_stage_a.html` 加载成功；点击会话可切换详情和订单匹配状态；回复输入框可编辑；筛选、文件夹、订单操作、外链等控件无状态变化。
+- 阶段 B 服务端单元验收：动态模拟邮件持久化、订单联动、开关关闭清空排队任务、运行中批次禁止撤回、已完成批次回退留痕测试通过。
+- 阶段 B 浏览器验收：页面默认关闭智能客服；打开后显示批处理进度、L1/L2/L3/失败计数；新邮件自动入队；批次完成后展示演示撤回按钮；右侧订单和邮件详情随会话同步。
 - 命令：使用本机 `.env` 调用 `CozeClient.analyze(...)`（虚构物流邮件）
 - 结果：通过，`is_buyer_message=true`、`intent=shipping_status`、`order_id=ORD-1001`、`confidence=1.0`。
 - 命令：使用本机 `.env` 调用 `CozeClient.draft(...)`（虚构订单与物流事实）
@@ -176,7 +183,8 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 下一步
 
-- 阶段 B 尚未开始；必须在用户明确确认后，才在阶段 A HTML 基线上加入智能客服开关和 Agent 增量能力。
+- 启动阶段 B 服务进行浏览器验收：全局开关确认、批处理进度、L1/L2/L3 展示、新邮件自动入队、失败重试和演示撤回。
+- 验收通过后运行全量测试、提交并推送 GitHub。
 - `.env` 和 Coze PAT 继续只保留在本机。
 - 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；8 条案例评测完成前，不得声称完整 Interactive POC 已通过。
 - 8 条运行记录完成前，只能声称“Coze 连通性试运行通过”，不能声称完整 Coze POC 评测通过。

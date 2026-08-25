@@ -32,6 +32,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 A：已完成原 HTML 客服邮件页面基线。主展示文件为 `prototype/stage_a/amazon_mail_stage_a.html`；阶段 A 只保留会话切换、订单联动、回复输入和滚动，不调用 Coze、不显示 Agent 控件。标注版和交互范围见 `prototype/stage_a/` 与 `docs/stage_a_interaction_scope.md`。
 
+阶段 B：已完成原 HTML 基线上的全局智能客服增量页面草稿。运行 `stage_b_server.py` 后，开启全局开关可批量处理待处理站内信，显示进度和 L1/L2/L3 计数；开启期间新邮件自动入队；最近一轮完成后可使用“撤回上一轮处理（演示）”。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -47,6 +49,8 @@ python scripts\validate_seed_data.py
 阶段 3 页面只是工作台骨架，不会产生真实发送；阶段 5 数据层只读写本地虚构数据库。Coze Workflow、POC 记录和动态 UI 均已完成，页面发送仍只写入本地 outbox。
 
 当前 Agent 工作台地址：`http://localhost:8506`（本机启动 Streamlit 后）。阶段 A 静态基线可用 `python -m http.server 8510 --bind 127.0.0.1 --directory prototype/stage_a` 启动，访问 `http://127.0.0.1:8510/amazon_mail_stage_a.html`。阶段 A 不写入 SQLite；旧版 Agent 工作台的发送仍只写入本地 outbox。
+
+阶段 B 预览：`.venv\Scripts\python.exe stage_b_server.py --port 8511`，访问 `http://127.0.0.1:8511/`。该页面仍只使用虚构数据；所有发送和撤回均为本地演示状态。
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 

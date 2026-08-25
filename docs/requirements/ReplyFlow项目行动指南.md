@@ -634,8 +634,11 @@ python -m streamlit run app.py
 6. FAILED 会话显示“重试 AI”按钮；开启智能客服后可重新调用 Coze，复用原邮件和订单上下文，不重复创建邮件。
 7. 页面底部“模拟邮件台”打开浮窗；选择订单后即时展示摘要，提交邮件后新会话置顶并自动选中。
 8. 使用 `st.container(border=True)` 或独立局部 HTML 卡片，不使用原始 HTML 包裹后续 Streamlit 组件，避免空白遮罩。
+9. 智能客服开关是全局开关；打开前提示当前待处理数量，确认后批量处理所有待分析/失败的买家站内信，并显示当前序号和 L1/L2/L3/失败计数。
+10. 开关保持开启时，新接入买家站内信自动进入处理队列；关闭后允许当前任务完成，但清空尚未开始的排队任务。
+11. 阶段 B 增加一次性按钮“撤回上一轮处理（演示）”：仅已完成批次可撤回，批次进行中禁用；回退本地模拟发件箱、草稿和线程状态，并在 `stage_b_rollback_events` 留痕。
 
-**历史验收结果**：旧版 Streamlit Agent 工作台曾验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；这不代表阶段 B 的 HTML 增量接入已经开始。
+**历史验收结果**：旧版 Streamlit Agent 工作台曾验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；阶段 B HTML 增量页面现已包含全局批处理、进度和演示撤回能力，需按本节重新验收。
 
 **Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"; git push origin main`
 
