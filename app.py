@@ -319,12 +319,13 @@ def _send_from_detail(connection: sqlite3.Connection, thread_id: str, email: dic
         subject=f"Re: {email['subject']}",
         body=body,
         confirmed=True,
+        checklist=checklist,
         operation_id=f"UI-SEND-{thread_id}-{digest}",
     )
     if not send["ok"]:
         return False, send["data"]["message"]
-    ThreadRepository(connection).update_status(thread_id, "AI_REPLIED", ai_level=ai_level, risk_level=risk_level)
     _record_confirmation(connection, artifacts.get("task", {}).get("task_id") if artifacts.get("task") else None, "SIMULATE_SEND", checklist)
+    ThreadRepository(connection).update_status(thread_id, "AI_REPLIED", ai_level=ai_level, risk_level=risk_level)
     return True, "已写入本地模拟发件箱，未发送到真实邮箱。"
 
 

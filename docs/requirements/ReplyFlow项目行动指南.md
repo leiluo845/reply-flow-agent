@@ -675,6 +675,8 @@ python -m streamlit run app.py
 
 **常见失败**：如果一级自动处理与“confirmed=true”冲突，控制层以系统确认类型写入，但仍需风险网关通过、白名单命中和完整审计。
 
+**完成记录（2026-08-26）**：已完成 `tests/test_reply_flow_e2e.py`，覆盖 L1 自动发送、L2 未确认阻断/编辑稿发送、L3 未完成清单阻断/完成清单发送、重复发送幂等与 payload 冲突、Tool 失败升级、Coze 失败重试和 trace/audit 留痕。`send_simulated_reply` 已新增 `checklist` 输入，并在 Tool 层对 L3 的全部必填项执行二次校验，避免仅依赖 UI 禁用按钮。阶段测试 6 passed，全量测试 97 passed（1 条 FastMCP 依赖警告）。
+
 ---
 
 ## 阶段 14：30+ 条评测与 Go/No-Go

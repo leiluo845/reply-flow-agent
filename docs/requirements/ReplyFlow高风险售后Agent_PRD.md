@@ -550,7 +550,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 | `search_reply_basis` | 只读 | 检索项目内部虚构回复依据，不提供政策管理功能 |
 | `get_reply_tone` | 只读 | 获取英文回复语气和禁用表达 |
 | `save_reply_draft` | 模拟写入 | 保存 AI 草稿和店管编辑稿 |
-| `send_simulated_reply` | 模拟写入 | `confirmed=true` 后写入本地 outbox |
+| `send_simulated_reply` | 模拟写入 | `confirmed=true` 后写入本地 outbox；L3 还必须提交全部核对清单 |
 
 已取消的 `create_support_ticket`、`create_refund_review_request` 不得实现。
 
@@ -617,7 +617,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 
 ### 13.3 幂等和写入规则
 
-- `save_reply_draft` 和 `send_simulated_reply` 必须有 `confirmed=true`、`operation_id`。
+- `save_reply_draft` 和 `send_simulated_reply` 必须有 `confirmed=true`、`operation_id`；L3 的 `send_simulated_reply` 还必须带 `checklist`，且所有必填项为 `true`。
 - 相同 operation_id 和相同 payload 重试，返回第一次结果，不重复写入。
 - 相同 operation_id 但 payload 不同，返回 `IDEMPOTENCY_CONFLICT`。
 - `send_simulated_reply` 只能写本地 outbox，不能调用外部网络接口。
@@ -639,6 +639,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 | `BASIS_NOT_FOUND` | 不补常识；生成保守回复并升级处理级别 |
 | `RISK_MISSED` | 写操作前再次执行风险扫描，命中即阻断 |
 | `CONFIRMATION_REQUIRED` | 返回核对/确认界面 |
+| `CHECKLIST_REQUIRED` | L3 未完成全部核对项，阻断模拟发送 |
 | `DUPLICATE_OPERATION` | 返回历史结果，不重复发送 |
 | `IDEMPOTENCY_CONFLICT` | 阻断并要求新 operation_id |
 

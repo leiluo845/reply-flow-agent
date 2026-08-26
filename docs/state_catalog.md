@@ -109,6 +109,7 @@ stateDiagram-v2
 | `BASIS_NOT_FOUND` | 回复依据无命中 | 显示依据不足 | R1 / L2；若邮件本身高风险则 R2 / L3 |
 | `BASIS_CONFLICT` | 回复依据冲突 | 显示冲突依据 | R2 / L3 |
 | `CONFIRMATION_REQUIRED` | 未确认即调用写工具 | 阻断发送 | 保持当前等级 |
+| `CHECKLIST_REQUIRED` | L3 未完成全部高风险核对清单 | 阻断发送 | 保持三级核对 |
 | `DUPLICATE_OPERATION` | 同一 `operation_id` 同 payload 重试 | 返回历史结果 | 不新增 outbox |
 | `IDEMPOTENCY_CONFLICT` | 同一 `operation_id` 不同 payload | 阻断并提示重新生成操作 | FAILED |
 

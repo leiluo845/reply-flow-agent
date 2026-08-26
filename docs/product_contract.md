@@ -101,9 +101,9 @@ Agent 不能凭模型记忆编造订单、物流、退款或平台规则。订�
 | `search_reply_basis` | 只读 | 检索只读回复依据 |
 | `get_reply_tone` | 只读 | 获取英文回复语气和禁用表达 |
 | `save_reply_draft` | 模拟写入 | 保存 AI 草稿和店管编辑稿 |
-| `send_simulated_reply` | 模拟写入 | 确认后写入本地 outbox |
+| `send_simulated_reply` | 模拟写入 | `confirmed=true` 后写入本地 outbox；L3 还必须提交全部核对清单 |
 
-`save_reply_draft` 和 `send_simulated_reply` 必须带 `operation_id`。重复提交同一 `operation_id` 且内容一致时返回历史结果，不重复写入；同一 `operation_id` 内容不同必须阻断。
+`save_reply_draft` 和 `send_simulated_reply` 必须带 `operation_id`。重复提交同一 `operation_id` 且内容一致时返回历史结果，不重复写入；同一 `operation_id` 内容不同必须阻断。`send_simulated_reply` 的 L3 请求还必须带 `checklist` 对象且所有必填项为 `true`，该门槛在 Tool 层再次校验。
 
 ## 8. Coze 与自建控制层分工
 

@@ -101,6 +101,7 @@ class SendInput(ToolInput):
     subject: str = "ReplyFlow simulated reply"
     body: str = Field(min_length=1)
     confirmed: bool = False
+    checklist: dict[str, bool] = Field(default_factory=dict)
     operation_id: str = Field(min_length=1)
 
     @field_validator("operation_id")
@@ -428,11 +429,20 @@ class ReplyFlowTools:
             thread = ThreadRepository(self.connection).get(request.thread_id)
             if not thread:
                 return _error(context, "THREAD_NOT_FOUND", f"Thread not found: {request.thread_id}")
+            if thread.get("ai_level") == "L3":
+                required_checklist = self._required_checklist(request.thread_id)
+                if any(request.checklist.get(item_id) is not True for item_id in required_checklist):
+                    return _error(
+                        context,
+                        "CHECKLIST_REQUIRED",
+                        "All required high-risk checklist items must be completed before sending.",
+                    )
             payload = {
                 "thread_id": request.thread_id,
                 "recipient": request.recipient,
                 "subject": request.subject,
                 "body": request.body,
+                "checklist": request.checklist,
             }
             outbox_id = f"OUT-{uuid4().hex[:12].upper()}"
             with transaction(self.connection):
@@ -476,6 +486,25 @@ class ReplyFlowTools:
             return _error(context, exc.code, exc.message)
         except Exception as exc:
             return _error(context, "TOOL_ERROR", str(exc))
+
+    def _required_checklist(self, thread_id: str) -> set[str]:
+        """Read the latest local risk decision for an L3 thread."""
+        row = self.connection.execute(
+            """SELECT rd.checklist_json
+               FROM risk_decisions rd
+               JOIN task_runs tr ON tr.task_id = rd.task_id
+               WHERE tr.thread_id = ?
+               ORDER BY rd.created_at DESC LIMIT 1""",
+            (thread_id,),
+        ).fetchone()
+        if row:
+            try:
+                checklist = json.loads(row["checklist_json"] or "{}")
+                if isinstance(checklist, dict) and checklist:
+                    return {str(key) for key in checklist}
+            except (TypeError, json.JSONDecodeError):
+                pass
+        return {"verify_facts", "review_customer_text", "confirm_simulated_only"}
 
 
 def create_mcp_server(connection: sqlite3.Connection):
@@ -552,6 +581,7 @@ def create_mcp_server(connection: sqlite3.Connection):
         body: str,
         subject: str = "ReplyFlow simulated reply",
         confirmed: bool = False,
+        checklist: dict[str, bool] | None = None,
         operation_id: str = "",
     ) -> dict[str, Any]:
         return tools.send_simulated_reply(
@@ -560,6 +590,7 @@ def create_mcp_server(connection: sqlite3.Connection):
             body=body,
             subject=subject,
             confirmed=confirmed,
+            checklist=checklist or {},
             operation_id=operation_id,
         )
 

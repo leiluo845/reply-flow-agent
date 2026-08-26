@@ -245,13 +245,13 @@ class StageBManager:
                 raise ValueError("当前邮件不处于人工发送状态")
             email = EmailRepository(self.connection).get(thread["email_id"])
             operation = "stage-b-manual-send-" + hashlib.sha256(f"{thread['thread_id']}|{body}".encode()).hexdigest()[:20]
-            result = self._send_tool(thread["thread_id"], email, body, operation)
+            result = self._send_tool(thread["thread_id"], email, body, operation, checklist=checklist or {})
             return result
 
-    def _send_tool(self, thread_id: str, email: dict[str, Any], body: str, operation: str) -> dict[str, Any]:
+    def _send_tool(self, thread_id: str, email: dict[str, Any], body: str, operation: str, *, checklist: dict[str, bool] | None = None) -> dict[str, Any]:
         from replyflow.mcp_tools import ReplyFlowTools
 
-        result = ReplyFlowTools(self.connection).send_simulated_reply(thread_id=thread_id, recipient=email["sender_email"], subject="Re: " + email["subject"], body=body, confirmed=True, operation_id=operation)
+        result = ReplyFlowTools(self.connection).send_simulated_reply(thread_id=thread_id, recipient=email["sender_email"], subject="Re: " + email["subject"], body=body, confirmed=True, checklist=checklist or {}, operation_id=operation)
         if not result["ok"]:
             raise ValueError(result["data"]["message"])
         ThreadRepository(self.connection).update_status(thread_id, "AI_REPLIED", ai_level=None, risk_level=None)
