@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 14（30+ 条离线评测与 Go/Conditional Go/No-Go）已完成：在阶段 13 端到端控制验证基础上，完成 Demo/Interactive 独立评测、13 条 R2 高风险案例、指标切片、控制验证和可追溯报告。当前 Demo 与 Interactive 均按安全门槛诚实判定为 No-Go；阶段 B 页面、服务和 GitHub 备份保持可用。
+阶段 15（ROI 敏感性分析）已完成：在阶段 14 评测证据基础上，新增 Decimal 参数化计算、保守/基准/乐观情景和 Streamlit 可编辑 ROI 面板。所有收益仅用于展示假设敏感性，不代表真实业务收益；阶段 B 页面、服务和 GitHub 备份保持可用。下一阶段为阶段 16（README、HTML/PDF、视频和面试脚本）。
 
 ## 已完成
 
@@ -108,6 +108,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 阶段 13 端到端控制验证：新增 `tests/test_reply_flow_e2e.py`，覆盖 L1 自动发送、L2 确认与编辑稿、L3 核对清单、重复发送幂等、payload 冲突、Tool/Coze 失败升级和重试。
 - `send_simulated_reply` 新增可选 `checklist` 输入；当线程为 L3 时，Tool 层读取最新本地风险决策并强制校验所有必填核对项，返回 `CHECKLIST_REQUIRED` 时不写入 outbox。
 - 阶段 14 离线评测：新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条案例（13 条 R2），输出 Demo/Interactive JSON 与 Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。
+- 阶段 15 ROI 敏感性分析：新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`；支持月邮件量、L1/L2/L3 占比、人工/AI 时间、人工小时成本、模型成本、维护成本、错误概率和单次预期损失等参数；输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；Streamlit 页面提供三档预置情景对比及当前情景编辑；使用 `Decimal` 并覆盖零量、无盈亏平衡、占比边界和 L3 敏感性测试。
 
 ## 本轮修改
 

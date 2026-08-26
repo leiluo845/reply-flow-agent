@@ -5,6 +5,7 @@ import html
 import json
 import sqlite3
 import sys
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ from replyflow.interactive_orchestrator import InteractiveOrchestrator
 from replyflow.mcp_tools import ReplyFlowTools
 from replyflow.orchestrator import DemoOrchestrator
 from replyflow.repositories import EmailRepository, ThreadRepository
+from replyflow.roi import ROI_PRESETS, ROIInputs, calculate_roi
 from replyflow.ui_helpers import build_source_message_id, can_send, status_label
 
 
@@ -1012,6 +1014,141 @@ def render_detail(connection: sqlite3.Connection, settings: AppSettings, mode: s
     _render_static_trace(artifacts)
 
 
+def _roi_decimal(value: float) -> Decimal:
+    """Convert a Streamlit numeric input without introducing binary float noise."""
+    return Decimal(str(value))
+
+
+def _roi_money(value: Decimal) -> str:
+    return f"${value:,.2f}"
+
+
+def _roi_param_number(
+    label: str,
+    key: str,
+    default: Decimal,
+    *,
+    step: float = 0.1,
+    help_text: str | None = None,
+) -> Decimal:
+    value = st.number_input(
+        label,
+        min_value=0.0,
+        value=float(default),
+        step=step,
+        key=key,
+        help=help_text,
+    )
+    return _roi_decimal(value)
+
+
+def render_roi_panel() -> None:
+    """Render a self-contained, fictional ROI sensitivity-analysis panel."""
+    with st.expander("ROI 敏感性分析（作品演示）", expanded=False):
+        st.caption("仅用于验证假设敏感性，不代表真实业务收益；金额、邮件量和成本均为虚构。")
+        scenario = st.radio(
+            "假设情景",
+            list(ROI_PRESETS),
+            index=1,
+            horizontal=True,
+            key="roi_scenario",
+            help="切换保守、基准或乐观假设；下方参数可继续手动调整。",
+        )
+        preset = ROI_PRESETS[scenario]
+        prefix = f"roi_{scenario}"
+
+        st.markdown("**业务量与处理占比**")
+        volume_col, l1_col, l2_col, l3_col = st.columns(4)
+        with volume_col:
+            monthly_volume = int(
+                st.number_input(
+                    "月邮件量",
+                    min_value=0,
+                    value=preset.monthly_volume,
+                    step=100,
+                    key=f"{prefix}_volume",
+                    help="每月进入顶部聚合站内信的虚构邮件数量。",
+                )
+            )
+        with l1_col:
+            l1_share = _roi_decimal(
+                st.number_input("L1 占比 (%)", min_value=0.0, max_value=100.0, value=float(preset.l1_share * 100), step=1.0, key=f"{prefix}_l1_share")
+            ) / 100
+        with l2_col:
+            l2_share = _roi_decimal(
+                st.number_input("L2 占比 (%)", min_value=0.0, max_value=100.0, value=float(preset.l2_share * 100), step=1.0, key=f"{prefix}_l2_share")
+            ) / 100
+        with l3_col:
+            l3_share = _roi_decimal(
+                st.number_input("L3 占比 (%)", min_value=0.0, max_value=100.0, value=float(preset.l3_share * 100), step=1.0, key=f"{prefix}_l3_share")
+            ) / 100
+
+        st.markdown("**时间、成本与风险假设**")
+        time_col, ai_col, cost_col = st.columns(3)
+        with time_col:
+            manual_minutes = _roi_param_number("原人工处理时间（分钟/封）", f"{prefix}_manual_minutes", preset.manual_minutes_per_email, step=0.5)
+            ai_l1 = _roi_param_number("L1 AI 后处理时间（分钟/封）", f"{prefix}_ai_l1", preset.ai_minutes_l1, step=0.1)
+            ai_l2 = _roi_param_number("L2 AI 后处理时间（分钟/封）", f"{prefix}_ai_l2", preset.ai_minutes_l2, step=0.1)
+            ai_l3 = _roi_param_number("L3 AI 后处理时间（分钟/封）", f"{prefix}_ai_l3", preset.ai_minutes_l3, step=0.1)
+        with ai_col:
+            labor_cost = _roi_param_number("人工小时成本", f"{prefix}_labor_cost", preset.labor_cost_per_hour, step=1.0, help_text="示例货币单位：美元/小时。")
+            model_cost = _roi_param_number("单次模型成本", f"{prefix}_model_cost", preset.model_cost_per_email, step=0.005, help_text="示例货币单位：美元/封。")
+            maintenance_cost = _roi_param_number("月维护成本", f"{prefix}_maintenance_cost", preset.maintenance_cost_monthly, step=50.0, help_text="示例货币单位：美元/月。")
+        with cost_col:
+            error_probability = _roi_decimal(
+                st.number_input("错误概率 (%)", min_value=0.0, max_value=100.0, value=float(preset.error_probability * 100), step=0.1, key=f"{prefix}_error_probability")
+            ) / 100
+            expected_loss = _roi_param_number("单次错误预期损失", f"{prefix}_expected_loss", preset.expected_loss_per_error, step=5.0, help_text="示例货币单位：美元/次。")
+
+        try:
+            inputs = ROIInputs(
+                monthly_volume=monthly_volume,
+                l1_share=l1_share,
+                l2_share=l2_share,
+                l3_share=l3_share,
+                manual_minutes_per_email=manual_minutes,
+                ai_minutes_l1=ai_l1,
+                ai_minutes_l2=ai_l2,
+                ai_minutes_l3=ai_l3,
+                labor_cost_per_hour=labor_cost,
+                model_cost_per_email=model_cost,
+                maintenance_cost_monthly=maintenance_cost,
+                error_probability=error_probability,
+                expected_loss_per_error=expected_loss,
+            )
+            result = calculate_roi(inputs)
+        except ValueError as exc:
+            st.error(f"参数无法计算：{exc}")
+            return
+
+        st.markdown("**情景对比（使用预置参数）**")
+        comparison_cols = st.columns(3)
+        for col, (name, preset_inputs) in zip(comparison_cols, ROI_PRESETS.items()):
+            preset_result = calculate_roi(preset_inputs)
+            with col:
+                st.metric(f"{name}净收益", _roi_money(preset_result.net_benefit))
+                st.caption(f"节省 {preset_result.hours_saved:.1f} 小时 · 盈亏平衡 {preset_result.break_even_volume or '不可达'} 封/月")
+
+        st.markdown(f"**当前情景：{scenario}（可编辑参数）**")
+        metrics = st.columns(6)
+        metric_values = [
+            ("人工节省", f"{result.hours_saved:.1f} 小时"),
+            ("人工节省价值", _roi_money(result.labor_saved_value)),
+            ("模型成本", _roi_money(result.model_cost)),
+            ("维护成本", _roi_money(result.maintenance_cost)),
+            ("风险成本", _roi_money(result.risk_cost)),
+            ("净收益", _roi_money(result.net_benefit)),
+        ]
+        for col, (label, value) in zip(metrics, metric_values):
+            with col:
+                col.metric(label, value)
+        if result.net_benefit >= 0:
+            st.success(f"当前参数下为正向敏感性结果；盈亏平衡量：{result.break_even_volume or 0:,} 封/月。")
+        else:
+            st.warning("当前参数下净收益为负，说明该假设组合不值得推进或需要降低成本/风险。")
+        st.caption("注意：盈亏平衡量只基于本地参数化模型，不等同于真实 ROI、财务预测或上线承诺。")
+
+
 def render_app() -> None:
     st.set_page_config(page_title="七星 OMS · 邮件消息", page_icon="✉", layout="wide", initial_sidebar_state="collapsed")
     settings = load_settings()
@@ -1038,6 +1175,7 @@ def render_app() -> None:
     with order_col:
         with st.container(border=True):
             _render_order_panel(connection, email_id)
+    render_roi_panel()
 
 
 if __name__ == "__main__":

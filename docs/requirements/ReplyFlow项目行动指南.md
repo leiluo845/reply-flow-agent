@@ -738,6 +738,8 @@ python -m pytest -q
 
 **Git**：`git add src app.py tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow ROI sensitivity analysis"; git push origin main`
 
+**完成记录（2026-08-26）**：已新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`。计算模型将未被 L1/L2/L3 路由的邮件保留在人工路径，使用 `Decimal` 输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；页面底部新增可展开的 ROI 敏感性分析面板，提供保守/基准/乐观预置情景、可编辑参数、正负收益提示和明确的虚构数据免责声明。ROI 专项测试 10 条、全量测试 108 条均通过。
+
 ---
 
 ## 阶段 16：README、HTML/PDF、视频和面试脚本

@@ -36,6 +36,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 14：已完成 30 条离线评测（其中 13 条 R2），支持 `--mode demo/interactive`，输出 JSON/Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。当前 Demo 因复杂语义和高风险覆盖不足为 No-Go；Interactive 因 Coze 工作区额度不足为 No-Go，均保留真实失败证据，不伪造模型结果。
 
+阶段 15：已完成参数化 ROI 敏感性分析。`src/replyflow/roi.py` 使用 `Decimal` 计算人工节省、模型/维护/风险成本、净收益和盈亏平衡量；内置保守/基准/乐观三档假设，并在 Streamlit 工作台底部提供可编辑的 ROI 展示面板。所有结果均为虚构敏感性分析，不代表真实业务收益。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
