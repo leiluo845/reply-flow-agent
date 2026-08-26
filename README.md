@@ -38,6 +38,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 15：已完成参数化 ROI 敏感性分析。`src/replyflow/roi.py` 使用 `Decimal` 计算人工节省、模型/维护/风险成本、净收益和盈亏平衡量；内置保守/基准/乐观三档假设，并在 Streamlit 工作台底部提供可编辑的 ROI 展示面板。所有结果均为虚构敏感性分析，不代表真实业务收益。
 
+阶段 16：已完成面试交付材料：单页 [HTML 案例说明](./docs/replyflow_case_study.html)、[PDF 案例说明](./docs/replyflow_case_study.pdf)、[5–7 分钟面试脚本](./docs/interview_script.md) 和 [2–3 分钟录屏分镜](./docs/video_storyboard.md)。案例页只使用项目虚构数据和阶段 14 实际评测数字；HTML/PDF 用于讲解，不能替代可运行的 Streamlit Demo。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动
@@ -55,6 +57,13 @@ python scripts\validate_seed_data.py
 当前 Agent 工作台地址：`http://localhost:8506`（本机启动 Streamlit 后）。阶段 A 静态基线可用 `python -m http.server 8510 --bind 127.0.0.1 --directory prototype/stage_a` 启动，访问 `http://127.0.0.1:8510/amazon_mail_stage_a.html`。阶段 A 不写入 SQLite；旧版 Agent 工作台的发送仍只写入本地 outbox。
 
 阶段 B 预览：`.venv\Scripts\python.exe stage_b_server.py --port 8511`，访问 `http://127.0.0.1:8511/`。该页面仍只使用虚构数据；所有发送和撤回均为本地演示状态。
+
+生成/更新 PDF 案例页：
+
+```powershell
+$pdf = "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe"
+& $pdf scripts\generate_case_study_pdf.py
+```
 
 阶段 4 的数据只用于本地演示和离线评测，不连接真实业务系统。
 

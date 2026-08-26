@@ -777,6 +777,8 @@ python -m streamlit run app.py
 
 **常见失败**：如果视频只展示预置静态会话，重新录制动态接入过程。
 
+**完成记录（2026-08-26）**：已完成 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md` 和 `docs/video_storyboard.md`；新增 `scripts/generate_case_study_pdf.py` 支持从本地案例内容重建 PDF。材料只引用项目虚构数据和阶段 14 实际评测数字，明确 Demo/Interactive No-Go、Coze 额度限制、混合架构职责和“HTML/PDF 不能替代可运行 Streamlit Demo”。
+
 ---
 
 ## 3. 最终自查清单
@@ -813,10 +815,10 @@ python -m streamlit run app.py
 
 ### 3.5 安全与证据
 
-- [ ] 高风险识别 100%，无依据事实和未授权承诺 0%。
+- [ ] 目标安全门槛：高风险识别 100%，无依据事实和未授权承诺 0%；当前 Demo 高风险召回 61.5%，因此评测结论为 No-Go。
 - [ ] 所有写入有确认、operation_id 和审计。
 - [ ] Coze PAT/Token、真实数据和敏感日志不进入 Git/截图/视频。
-- [ ] 30+ 独立评测，失败案例可回放。
+- [ ] 已完成 30 条独立评测（满足 PRD 的至少 30 条要求），失败案例可回放；如需“30+”版本，应继续扩充案例集。
 
 ## 4. 推荐面试演示顺序
 

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReplyFlow｜高风险售后 Agent 评测与人机协同工作台</title>
+  <style>
+    :root{--ink:#172554;--muted:#64748b;--line:#dbe4f0;--brand:#4658df;--soft:#eef2ff;--danger:#b42318;--warn:#9a6700;--ok:#087443}
+    *{box-sizing:border-box} body{margin:0;background:#f6f8fc;color:#1e293b;font-family:"Microsoft YaHei","Noto Sans SC",Arial,sans-serif;line-height:1.55}
+    .page{max-width:1120px;margin:0 auto;padding:42px 48px 56px;background:#fff;min-height:100vh}.eyebrow{color:var(--brand);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    h1{color:var(--ink);font-size:34px;line-height:1.2;margin:10px 0 12px} h2{color:var(--ink);font-size:21px;margin:32px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px} h3{color:var(--ink);font-size:16px;margin:0 0 5px} p{margin:7px 0;color:#334155}
+    .lead{font-size:17px;color:#475569;max-width:880px}.note{margin:18px 0;padding:12px 15px;border-left:4px solid var(--brand);background:var(--soft);color:#334155;font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{border:1px solid var(--line);border-radius:9px;padding:15px;background:#fff}.card strong{display:block;color:var(--ink);font-size:23px;margin-bottom:2px}.muted{color:var(--muted);font-size:12px}
+    .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:stretch}.step{padding:13px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;text-align:center;font-size:13px}.step b{display:block;color:var(--brand);font-size:12px;margin-bottom:4px}.arrow{display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:22px}
+    .arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.arch .box{border-radius:8px;padding:14px;border:1px solid var(--line);min-height:114px}.arch .box:nth-child(1){background:#f8fafc}.arch .box:nth-child(2){background:#eef2ff;border-color:#c7d2fe}.arch .box:nth-child(3){background:#ecfdf5;border-color:#bbf7d0}.box ul{padding-left:18px;margin:8px 0 0;color:#475569;font-size:13px}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--ink);background:#f8fafc}.ok{color:var(--ok);font-weight:700}.warn{color:var(--warn);font-weight:700}.danger{color:var(--danger);font-weight:700}
+    .footer{margin-top:35px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#e9ebff;color:#3949ab;font-size:11px;margin:2px 4px 2px 0}
+    @media(max-width:760px){.page{padding:25px 20px}.grid,.arch{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);height:18px}h1{font-size:27px}}
+  </style>
+</head>
+<body><main class="page">
+  <div class="eyebrow">Product case study · Personal research project</div>
+  <h1>ReplyFlow｜高风险售后 Agent<br>评测与人机协同工作台</h1>
+  <p class="lead">一个搭载在电商邮件系统顶部聚合站内信上的 AI 回复能力原型：让低风险邮件更快处理，让中风险邮件可编辑确认，让高风险邮件在发送前被明确拦截。</p>
+  <div class="note"><b>演示边界：</b>邮件、订单、物流、发送和 ROI 均为虚构或本地模拟；不连接真实 Amazon、邮箱、支付或订单写入接口。Coze 只负责 Analyze/Draft，本地控制层负责事实、风险、状态、确认、幂等和审计。</div>
+
+  <h2>01｜为什么做</h2>
+  <div class="grid"><div class="card"><strong>原页面增量接入</strong><span class="muted">保留店管熟悉的邮件工作台，不另造聊天产品。</span></div><div class="card"><strong>三级处理</strong><span class="muted">L1 自动发送 · L2 草稿确认 · L3 草稿+高风险核对。</span></div><div class="card"><strong>可评测、可回放</strong><span class="muted">每次任务都有风险决策、Tool Trace、审计和幂等标识。</span></div></div>
+
+  <h2>02｜一封邮件如何流转</h2>
+  <div class="flow"><div class="step"><b>01 接入</b>模拟邮件浮窗<br>可选虚构订单</div><div class="arrow">→</div><div class="step"><b>02 聚合</b>原始收件箱<br>顶部站内信</div><div class="arrow">→</div><div class="step"><b>03 分析</b>Coze Analyze<br>意图与草稿</div><div class="arrow">→</div><div class="step"><b>04 控制</b>本地事实、风险<br>状态与确认</div><div class="arrow">→</div><div class="step"><b>05 回复</b>自动发送或<br>人工确认后模拟发送</div></div>
+
+  <h2>03｜混合架构</h2>
+  <div class="arch"><div class="box"><h3>Coze 模型编排层</h3><ul><li>Analyze：意图、订单号、置信度</li><li>Draft：基于输入生成英文草稿</li><li>失败时返回结构化错误</li></ul></div><div class="box"><h3>ReplyFlow 控制层</h3><ul><li>8 个 MCP Tools</li><li>3 个可版本化 Skills</li><li>订单/物流事实、回复依据</li></ul></div><div class="box"><h3>确定性安全边界</h3><ul><li>R0–R3 风险网关</li><li>L1–L3 状态机</li><li>确认、幂等、审计、本地 outbox</li></ul></div></div>
+  <p><span class="tag">email_triage</span><span class="tag">reply_drafting</span><span class="tag">risk_routing</span><span class="tag">MCP × 8</span><span class="tag">SQLite</span><span class="tag">Streamlit + CSS</span></p>
+
+  <h2>04｜风险分级与人机协同</h2>
+  <table><thead><tr><th>处理级别</th><th>典型场景</th><th>系统动作</th><th>人工边界</th></tr></thead><tbody><tr><td class="ok">L1 / R0–R1</td><td>有订单依据的物流状态咨询</td><td>通过风险网关后写入本地模拟发件箱</td><td>无需逐封确认，但仍保留 Trace</td></tr><tr><td class="warn">L2 / R1</td><td>尺码、换货等需要措辞判断的咨询</td><td>生成草稿并填入原回复框</td><td>店管编辑/确认后才可模拟发送</td></tr><tr><td class="danger">L3 / R2</td><td>退款、拒付、投诉或高承诺风险</td><td>生成草稿并显示风险原因</td><td>核对清单未完成时发送被阻断</td></tr></tbody></table>
+
+  <h2>05｜评测证据（阶段 14）</h2>
+  <div class="grid"><div class="card"><strong>30</strong><span class="muted">离线案例</span></div><div class="card"><strong>13</strong><span class="muted">R2 高风险案例</span></div><div class="card"><strong>100%</strong><span class="muted">动态接入率（29/29）</span></div><div class="card"><strong>0</strong><span class="muted">未授权承诺违规</span></div><div class="card"><strong>0</strong><span class="muted">无依据订单事实违规</span></div><div class="card"><strong class="danger">61.5%</strong><span class="muted">Demo 高风险召回，未达安全门槛</span></div></div>
+  <p class="note"><b>结论：No-Go。</b> Demo 的高风险召回和复杂语义覆盖不足；Interactive 因 Coze 工作区额度不足记录为 No-Go。这里保留失败证据，不用静态成功截图替代真实评测。</p>
+
+  <h2>06｜项目取舍与限制</h2>
+  <table><thead><tr><th>选择</th><th>理由</th></tr></thead><tbody><tr><td>Coze + 自建控制层</td><td>用 Coze 快速验证模型编排，用本地代码掌控事实、风险、状态和审计；两者职责可测试、可替换。</td></tr><tr><td>虚构数据 + 本地 outbox</td><td>独立演示、不泄露公司数据，也不把作品误包装成已上线系统。</td></tr><tr><td>不做多 Agent/真实写接口</td><td>聚焦单 Agent 客服回复和高风险人机协同，控制演示范围与安全边界。</td></tr><tr><td>ROI 只做敏感性分析</td><td>帮助讨论假设区间，不声称真实财务收益。</td></tr></tbody></table>
+
+  <h2>07｜如何运行</h2>
+  <p><code>.venv\Scripts\python.exe -m pytest -q</code></p><p><code>.venv\Scripts\python.exe -m streamlit run app.py</code></p><p>打开 <code>http://localhost:8506/</code>，从「模拟邮件台」输入一行邮件开始。</p>
+  <div class="footer">ReplyFlow · 个人作品集案例说明 · 2026-08-26 · 仅用于面试演示与产品能力验证</div>
+</main></body></html>
