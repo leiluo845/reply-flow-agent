@@ -13,6 +13,7 @@
 9. [阶段 2 Coze Workflow Spec](./poc/coze/workflow_spec.md)
 10. [阶段 2 POC Cases](./poc/coze/poc_cases.md)
 11. [页面规范：原邮件工作台内置 Agent](./docs/ui_prototype_spec.md)
+12. [技术图谱](./docs/技术图谱.md)
 
 ## 当前状态
 

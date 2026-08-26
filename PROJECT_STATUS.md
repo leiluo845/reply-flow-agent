@@ -110,6 +110,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 阶段 14 离线评测：新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条案例（13 条 R2），输出 Demo/Interactive JSON 与 Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。
 - 阶段 15 ROI 敏感性分析：新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`；支持月邮件量、L1/L2/L3 占比、人工/AI 时间、人工小时成本、模型成本、维护成本、错误概率和单次预期损失等参数；输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；Streamlit 页面提供三档预置情景对比及当前情景编辑；使用 `Decimal` 并覆盖零量、无盈亏平衡、占比边界和 L3 敏感性测试。
 - 阶段 16 面试交付材料：新增 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md`、`docs/video_storyboard.md` 和 `scripts/generate_case_study_pdf.py`；案例页覆盖定位、动态链路、混合架构、三级风险、评测证据和限制；脚本强制从动态模拟邮件开始，并提供 Coze 失败时的诚实兜底。
+- 阶段 16 技术图谱：新增 `docs/技术图谱.md`，按展示层、接入聚合、Agent 编排、Coze、Skills、MCP Tools、风险网关、状态机、数据证据、评测与 ROI 分层说明组成、职责和完整处理链路。
 
 ## 本轮修改
 

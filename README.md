@@ -89,6 +89,7 @@ Coze 负责概率型能力：意图识别、实体抽取和英文草稿生成。
 
 ## 面试材料
 
+- [技术图谱](./docs/技术图谱.md)
 - [单页 HTML 案例说明](./docs/replyflow_case_study.html)
 - [PDF 案例说明](./docs/replyflow_case_study.pdf)
 - [5–7 分钟面试脚本](./docs/interview_script.md)
