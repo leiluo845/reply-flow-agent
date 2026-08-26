@@ -40,6 +40,62 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 16：已完成面试交付材料：单页 [HTML 案例说明](./docs/replyflow_case_study.html)、[PDF 案例说明](./docs/replyflow_case_study.pdf)、[5–7 分钟面试脚本](./docs/interview_script.md) 和 [2–3 分钟录屏分镜](./docs/video_storyboard.md)。案例页只使用项目虚构数据和阶段 14 实际评测数字；HTML/PDF 用于讲解，不能替代可运行的 Streamlit Demo。
 
+## 项目定位与演示路径
+
+ReplyFlow 不是独立聊天机器人，而是在电商邮件系统“顶部聚合站内信”上增量接入的单 Agent 回复能力。页面保留原邮件工作台骨架；右下角「模拟邮件台」用于输入一行虚构邮件、选择虚构订单并观察状态变化：
+
+```text
+模拟邮件台 → 原始收件箱 → 顶部聚合站内信 → Coze Analyze/Draft
+→ 本地事实/风险网关 → L1 自动回复 / L2 草稿确认 / L3 高风险核对
+→ 本地模拟 outbox、Trace、Audit
+```
+
+唯一业务角色是店管。关闭智能客服时只接收和聚合邮件；开启后才调用 Coze。所有发送均为本地模拟写入，不连接真实 Amazon、邮箱、支付或订单接口。
+
+## Agent 能力清单
+
+### 3 个 Skills
+
+- `email_triage`：读取邮件、提取显式订单号、调用订单查询，不生成回复。
+- `reply_drafting`：基于已验证事实和只读依据生成英文草稿，禁止凭空补全。
+- `risk_routing`：结合本地规则、工具结果和草稿承诺决定 R0–R3 与 L1–L3。
+
+### 8 个 MCP Tools
+
+`ingest_simulated_email`、`get_email`、`find_order`、`get_shipping_status`、`search_reply_basis`、`get_reply_tone`、`save_reply_draft`、`send_simulated_reply`。
+
+其中订单/物流/回复依据 Tool 为只读事实边界；草稿和发送 Tool 必须显式确认并使用 `operation_id`，L3 还必须通过完整核对清单。
+
+## Coze 与自建控制层
+
+Coze 负责概率型能力：意图识别、实体抽取和英文草稿生成。Python 本地层负责确定性能力：邮件接入、聚合、事实查询、风险网关、状态机、确认、幂等、审计和模拟 outbox。这样的分工让模型编排可以替换，同时把高风险写入边界留在可测试、可回放的代码中。
+
+## 三级处理与取消项
+
+| 级别 | 页面动作 |
+|---|---|
+| L1 | 低风险且事实完整时自动写入本地模拟 outbox |
+| L2 | 生成草稿进入原回复框，店管确认/编辑后模拟发送 |
+| L3 | 生成草稿并显示高风险提示，核对清单未完成时阻断发送 |
+
+本项目不做主管/管理员/审批、政策邮件治理、工单、退款审核、真实外部写接口、Multi-Agent、LangGraph、FastAPI 或独立前端框架；这些范围会削弱“嵌入原邮件工作台”的展示重点。
+
+## 评测与限制
+
+- Demo：30 条案例、13 条 R2；动态接入率 100%（29/29），未授权承诺违规 0，无依据订单事实违规 0，高风险召回 61.5%，结论为 **No-Go**。
+- Interactive：因 Coze 工作区额度不足记录为 **No-Go**，不伪造模型成功结果。
+- 详细报告：[Demo 报告](./evals/reports/eval_demo.md)、[Interactive 报告](./evals/reports/eval_interactive.md)。
+- ROI 面板是可编辑的保守/基准/乐观敏感性分析，不代表真实财务收益。
+
+## 面试材料
+
+- [单页 HTML 案例说明](./docs/replyflow_case_study.html)
+- [PDF 案例说明](./docs/replyflow_case_study.pdf)
+- [5–7 分钟面试脚本](./docs/interview_script.md)
+- [2–3 分钟录屏分镜](./docs/video_storyboard.md)
+
+实际录屏需在本地手动完成；录制应从模拟邮件浮窗输入开始，不能只播放预置静态会话。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动

@@ -62,6 +62,8 @@ python -m pytest -q
 python -m streamlit run app.py
 ```
 
+阶段 16 案例页材料也已纳入仓库：`docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md`、`docs/video_storyboard.md`。如需重建 PDF，运行 `python scripts/generate_case_study_pdf.py`；该命令依赖 `reportlab`，已写入 `requirements.txt`。
+
 ## 4. 恢复本地配置
 
 ```powershell
