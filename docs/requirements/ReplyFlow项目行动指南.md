@@ -713,6 +713,8 @@ python -m pytest -q
 
 **常见失败**：Demo 100% 时先检查是否按 case_id 或 expected 硬编码。
 
+**完成记录（2026-08-26）**：已新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条种子案例（13 条 R2），按独立临时 SQLite 运行 Demo/Interactive，输出逐案例 JSON/Markdown、意图/级别/风险切片、trace_ref 和控制验证。Demo 当前真实结果为 No-Go（高风险召回 61.5%，复杂语义覆盖不足）；Interactive 因 Coze 工作区额度不足记录为结构化失败并判定 No-Go，未伪造模型结果。阶段测试和全量测试均通过。
+
 ---
 
 ## 阶段 15：ROI 敏感性分析

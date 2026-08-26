@@ -9,7 +9,7 @@ from .models import AggregateThread
 
 
 BUYER_SOURCES = {"demo_console", "marketplace_station_message"}
-NON_BUYER_SOURCES = {"platform_notification", "system_notification", "internal_message"}
+NON_BUYER_SOURCES = {"platform_notification", "platform_notice", "system_notification", "internal_message"}
 
 
 def _iso(value: datetime) -> str:

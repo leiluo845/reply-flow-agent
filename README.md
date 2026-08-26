@@ -34,6 +34,8 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 B：已完成原 HTML 基线上的全局智能客服增量页面草稿。运行 `stage_b_server.py` 后，开启全局开关可批量处理待处理站内信，显示进度和 L1/L2/L3 计数；开启期间新邮件自动入队；最近一轮完成后可使用“撤回上一轮处理（演示）”。
 
+阶段 14：已完成 30 条离线评测（其中 13 条 R2），支持 `--mode demo/interactive`，输出 JSON/Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。当前 Demo 因复杂语义和高风险覆盖不足为 No-Go；Interactive 因 Coze 工作区额度不足为 No-Go，均保留真实失败证据，不伪造模型结果。
+
 本项目只使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写入接口。
 
 ## 本地启动

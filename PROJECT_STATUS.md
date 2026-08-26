@@ -6,7 +6,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 13（端到端控制验证）已完成：在阶段 B 页面和本地控制层基础上，补齐 L1/L2/L3 的发送门槛、Tool 层高风险核对清单校验、幂等冲突、失败升级、AI 原稿/人工编辑稿/最终发送稿边界，以及 trace/audit 可追溯测试。阶段 B 页面、服务和 GitHub 备份保持可用。
+阶段 14（30+ 条离线评测与 Go/Conditional Go/No-Go）已完成：在阶段 13 端到端控制验证基础上，完成 Demo/Interactive 独立评测、13 条 R2 高风险案例、指标切片、控制验证和可追溯报告。当前 Demo 与 Interactive 均按安全门槛诚实判定为 No-Go；阶段 B 页面、服务和 GitHub 备份保持可用。
 
 ## 已完成
 
@@ -107,6 +107,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 阶段 B 增加演示撤回：只允许撤回最近已完成批次，批次处理中禁用，回退本地草稿/模拟发件箱/线程状态并保留回退记录。
 - 阶段 13 端到端控制验证：新增 `tests/test_reply_flow_e2e.py`，覆盖 L1 自动发送、L2 确认与编辑稿、L3 核对清单、重复发送幂等、payload 冲突、Tool/Coze 失败升级和重试。
 - `send_simulated_reply` 新增可选 `checklist` 输入；当线程为 L3 时，Tool 层读取最新本地风险决策并强制校验所有必填核对项，返回 `CHECKLIST_REQUIRED` 时不写入 outbox。
+- 阶段 14 离线评测：新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条案例（13 条 R2），输出 Demo/Interactive JSON 与 Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。
 
 ## 本轮修改
 
@@ -170,6 +171,10 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：通过，`6 passed`；验证 L1/L2/L3 端到端控制、Tool 层确认与核对门槛、AI/人工/最终稿边界、幂等、失败升级和 trace/audit。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
 - 结果：通过，`97 passed`（FastMCP 依赖产生 1 条既有警告，不影响测试）。
+- 命令：`.venv\\Scripts\\python.exe evals\\run_eval.py --mode demo`
+- 结果：30 条案例完成运行；Demo 当前为 `No-Go`，高风险召回 61.5%，未授权承诺和无依据事实违规均为 0；详细结果见 `evals/reports/eval_demo.md` 和 `.json`。
+- 命令：`.venv\\Scripts\\python.exe evals\\run_eval.py --mode interactive`
+- 结果：30 条案例均被 Coze 结构化处理；当前工作区额度不足导致模型调用失败，自动判定 `No-Go`，详细错误和 trace_ref 见 `evals/reports/eval_interactive.md` 和 `.json`。
 - 浏览器验收：桌面视口下原 HTML 邮件工作台骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败提示通过；关闭开关不调用 AI，开启后失败不回退本地规则。
 - 阶段 A 浏览器验收：`http://127.0.0.1:8510/amazon_mail_stage_a.html` 加载成功；点击会话可切换详情和订单匹配状态；回复输入框可编辑；筛选、文件夹、订单操作、外链等控件无状态变化。
 - 阶段 B 服务端单元验收：动态模拟邮件持久化、订单联动、开关关闭清空排队任务、运行中批次禁止撤回、已完成批次回退留痕测试通过。
@@ -189,7 +194,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 下一步
 
-- 阶段 13 已完成；下一阶段为阶段 14：运行 30+ 条离线评测并输出 Go/Conditional Go/No-Go 结论。
+- 阶段 14 已完成；下一阶段为阶段 15：ROI 敏感性分析。若重新获得 Coze 额度，可重跑 Interactive 评测，不改动案例标注和安全门槛。
 - `.env` 和 Coze PAT 继续只保留在本机。
 - 阶段 11 的 Coze 只能分析和草拟，事实、风险、确认、幂等和发送仍由本地控制层负责；8 条案例评测完成前，不得声称完整 Interactive POC 已通过。
 - 8 条运行记录完成前，只能声称“Coze 连通性试运行通过”，不能声称完整 Coze POC 评测通过。
