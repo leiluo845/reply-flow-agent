@@ -29,12 +29,14 @@ from replyflow.ui_helpers import build_source_message_id
 
 
 CASE_DEFS: list[dict[str, Any]] = [
-    {"key": "andrea", "name": "Andrea", "email": "andrea.stageb@example.com", "subject": "Return label has not been received", "body": "I have not received a return label yet for this order. Please send it to me.", "order": "ORD-1003"},
-    {"key": "john", "name": "John", "email": "john.stageb@example.com", "subject": "Order delivery inquiry from Amazon customer", "body": "The tracking for ORD-1001 has not changed for several days. Could you please check it?", "order": "ORD-1001"},
-    {"key": "michael", "name": "Michael", "email": "michael.stageb@example.com", "subject": "Package shows delivered but not received", "body": "My package for ORD-1007 shows delivered, but I have not received it. Please refund me or I will file a chargeback.", "order": "ORD-1007"},
-    {"key": "meghan", "name": "Meghan", "email": "meghan.stageb@example.com", "subject": "Return label has not been received", "body": "Please resend the return label for ORD-1003 as an attachment.", "order": "ORD-1003"},
-    {"key": "cindy", "name": "Cindy", "email": "cindy.stageb@example.com", "subject": "Package shows delivered but not received", "body": "The carrier shows delivered, but the package is not at my address. Order ORD-1007.", "order": "ORD-1007"},
-    {"key": "matt", "name": "Matt", "email": "matt.stageb@example.com", "subject": "Product details inquiry", "body": "Could you confirm whether the jacket in ORD-1002 is water resistant enough for light rain?", "order": "ORD-1002"},
+    # Preloaded demo senders intentionally match their linked buyer account.
+    # This keeps identity verification from turning every case into L3.
+    {"key": "andrea", "name": "Andrea", "email": "buyer03@example.com", "subject": "Return label has not been received", "body": "I have not received a return label yet for this order. Please send it to me.", "order": "ORD-1003"},
+    {"key": "john", "name": "John", "email": "buyer01@example.com", "subject": "Order delivery inquiry from Amazon customer", "body": "The tracking for ORD-1001 has not changed for several days. Could you please check it?", "order": "ORD-1001"},
+    {"key": "michael", "name": "Michael", "email": "buyer07@example.com", "subject": "Package shows delivered but not received", "body": "My package for ORD-1007 shows delivered, but I have not received it. Please refund me or I will file a chargeback.", "order": "ORD-1007"},
+    {"key": "meghan", "name": "Meghan", "email": "buyer03@example.com", "subject": "Return label has not been received", "body": "Please resend the return label for ORD-1003 as an attachment.", "order": "ORD-1003"},
+    {"key": "cindy", "name": "Cindy", "email": "buyer07@example.com", "subject": "Package shows delivered but not received", "body": "The carrier shows delivered, but the package is not at my address. Order ORD-1007.", "order": "ORD-1007"},
+    {"key": "matt", "name": "Matt", "email": "buyer02@example.com", "subject": "Product details inquiry", "body": "Could you confirm whether the jacket in ORD-1002 is water resistant enough for light rain?", "order": "ORD-1002"},
 ]
 
 
@@ -149,9 +151,17 @@ class StageBManager:
         if not body:
             raise ValueError("正文不能为空")
         name = str(payload.get("name") or "Demo Buyer").strip()
-        email = str(payload.get("email") or "demo-buyer@example.com").strip()
+        email_input = str(payload.get("email") or "").strip()
         subject = str(payload.get("subject") or "New simulated customer message").strip()
         order = str(payload.get("order") or "").strip() or None
+        # The modal uses demo-buyer@example.com as a visible placeholder. When
+        # an order is selected, resolve that placeholder to the linked buyer so
+        # the normal demo path does not create a false identity conflict.
+        email = email_input or "demo-buyer@example.com"
+        if order and email.lower() == "demo-buyer@example.com":
+            linked = self.connection.execute("SELECT customer_email FROM orders WHERE order_id = ?", (order,)).fetchone()
+            if linked and linked["customer_email"]:
+                email = linked["customer_email"]
         key = "demo-" + hashlib.sha256(f"{name}|{email}|{subject}|{body}|{order}".encode()).hexdigest()[:10]
         case = {"key": key, "name": name, "email": email, "subject": subject, "body": body, "order": order, "dynamic": True}
         with self.lock:

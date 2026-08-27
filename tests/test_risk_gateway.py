@@ -155,6 +155,19 @@ def test_return_basis_missing_and_not_allowlisted_cases_stay_second_level() -> N
     assert (not_allowlisted.risk_level, not_allowlisted.ai_level) == ("R1", "L2")
 
 
+def test_return_label_not_received_is_not_misclassified_as_missing_delivered_package() -> None:
+    result = evaluate_risk(
+        _low_risk_input(
+            email={"body": "I have not received a return label for order ORD-1001."},
+            analysis={"intent": "return_or_exchange", "order_id": "ORD-1001", "confidence": 0.9},
+            verified_facts={"order_found": True, "fulfillment_status": "delivered"},
+        )
+    )
+
+    assert (result.risk_level, result.ai_level) == ("R1", "L2")
+    assert "R2_FACT_CONFLICT" not in result.matched_rules
+
+
 def test_model_escalation_and_architecture_prohibited_action_are_never_auto_sent() -> None:
     model_escalation = evaluate_risk(
         _low_risk_input(analysis={"intent": "shipment_inquiry", "order_id": "ORD-1001", "confidence": 0.9, "model_suggested_risk_level": "R2"})

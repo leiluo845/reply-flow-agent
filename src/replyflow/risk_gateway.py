@@ -209,7 +209,10 @@ def _deterministic_rules(request: RiskGatewayInput) -> tuple[RiskLevel, list[str
         text,
         ("did not receive", "didn't receive", "not received", "never received", "received nothing", "missing package"),
     )
-    if delivered and buyer_denies_delivery:
+    delivery_context = _contains_any(text, ("package", "parcel", "delivery", "carrier", "tracking"))
+    # A delivered order and a missing-package statement are materially
+    # contradictory. A return-label request alone is not such a conflict.
+    if delivered and delivery_context and buyer_denies_delivery:
         rules.append("R2_FACT_CONFLICT")
     if request.analysis.confidence < LOW_CONFIDENCE_THRESHOLD:
         rules.append("R2_LOW_CONFIDENCE")

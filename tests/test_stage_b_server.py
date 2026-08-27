@@ -32,6 +32,19 @@ def test_stage_b_dynamic_mail_persists_and_only_queued_work_is_cancelled(tmp_pat
     assert reloaded.queue == []
 
 
+def test_stage_b_seeded_cases_match_linked_buyer_identity(tmp_path: Path) -> None:
+    manager = StageBManager(tmp_path / "stage_b.sqlite3")
+    state = manager.state()
+    linked = {item["order"]: item["order_details"]["customer_email"] for item in state["items"] if item["order"]}
+    assert all(item["email"].lower() == linked[item["order"]].lower() for item in state["items"] if item["order"])
+
+
+def test_stage_b_dynamic_default_email_uses_selected_order_buyer(tmp_path: Path) -> None:
+    manager = StageBManager(tmp_path / "stage_b.sqlite3")
+    case = manager.add_case({"body": "Where is ORD-1001?", "order": "ORD-1001", "email": "demo-buyer@example.com"})
+    assert case["email"] == "buyer01@example.com"
+
+
 def test_stage_b_rollback_rejects_running_batch(tmp_path: Path) -> None:
     manager = StageBManager(tmp_path / "stage_b.sqlite3")
     manager.batch = {"batch_id": "BATCH-1", "status": "running"}
