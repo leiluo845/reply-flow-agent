@@ -51,7 +51,7 @@ def main() -> None:
         Paragraph("05｜边界与限制", styles["CNH2"]),
         Paragraph("Interactive 因 Coze 工作区额度不足记录为 No-Go；项目不连接真实 Amazon、邮箱、支付或订单接口，不包含主管/审批、多 Agent、政策治理等扩展范围。ROI 仅为虚构敏感性分析，不代表真实收益。", styles["CNBody"]),
         Spacer(1, 4 * mm),
-        Paragraph("运行：.venv\\Scripts\\python.exe -m streamlit run app.py · http://localhost:8506/", styles["CNSmall"]),
+        Paragraph("运行：.venv\\Scripts\\python.exe stage_b_server.py --port 8511 · http://127.0.0.1:8511/", styles["CNSmall"]),
     ])
     doc.build(story)
     print(OUT)

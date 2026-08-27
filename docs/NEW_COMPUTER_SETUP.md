@@ -56,11 +56,13 @@ python -m pip install -e .
 python -m pytest -q
 ```
 
-测试通过后，可启动当前最小页面：
+测试通过后，启动唯一的阶段 B 主演示页：
 
 ```powershell
-python -m streamlit run app.py
+python stage_b_server.py --port 8511
 ```
+
+访问 `http://127.0.0.1:8511/`。旧版 `app.py` / Streamlit 工作台已废弃并从仓库删除，不要启动 `8506`。
 
 阶段 16 案例页材料也已纳入仓库：`docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md`、`docs/video_storyboard.md`。如需重建 PDF，运行 `python scripts/generate_case_study_pdf.py`；该命令依赖 `reportlab`，已写入 `requirements.txt`。
 

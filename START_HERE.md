@@ -20,7 +20,7 @@
 - 阶段 0 已完成：Python 3.11.9 虚拟环境、独立 Git 仓库和基础文件已建立。
 - 阶段 1 已完成：产品契约、场景目录、状态目录和决策日志已冻结。
 - 阶段 2 已完成：Coze `ReplyFlow_POC` 已发布（Workflow ID `7677420616827928610`，版本 `v0.0.1`），本地 Analyze/Draft API 联调和 8 条案例运行记录已保存。
-- 阶段 3 已完成：最小 Python/Streamlit 工程骨架、配置模块、测试和空目录结构已创建；页面可启动但只显示未实现提示。
+- 阶段 3 已完成：最小 Python 工程骨架、配置模块、测试和空目录结构已创建。
 - 阶段 4 已完成：全虚构种子数据、只读回复依据和校验脚本已创建。
 - 阶段 5 已完成：SQLite 数据层、Pydantic 模型、幂等建库/种子初始化和仓储层已实现并通过测试。
 - 阶段 6 已完成：模拟邮件接入、买家消息聚合、非买家原始收件箱保留和 source_message_id 幂等已实现并通过测试。
@@ -29,10 +29,11 @@
 - 阶段 9 已完成：确定性风险网关、R0-R3 风险、L1-L3 处理级别、允许/阻断动作、核对清单和模型降级阻断已实现并通过测试。
 - 阶段 10 已完成：Demo Mode 状态机、有限规则路由、三类预置场景、Tool 故障升级、超范围提示和本地 outbox 串联已实现并通过测试。
 - 阶段 11 本地代码已完成：Coze 客户端、Analyze/Draft Schema、错误处理和 Interactive 编排 mock 测试已通过；真实 Workflow 已发布并完成 1 条试运行。
-- 阶段 12 已完成：Streamlit 动态工作台、右下角模拟邮件浮窗、顶部聚合、订单摘要、L1/L2/L3 交互、三级核对和模拟发件箱已实现并通过浏览器验收。
+- 阶段 12 已完成：动态邮件接入、顶部聚合、订单摘要、L1/L2/L3 交互、三级核对和模拟发件箱已实现并通过浏览器验收；页面实现已收敛到阶段 B HTML 主演示页。
 - 阶段 13、14、15、16 已完成：页面重构、端到端控制测试、30 条离线评测、ROI 敏感性分析和面试交付材料均已提交；`.env` 中的 Coze PAT 只保留在用户本机。
 - 阶段 A 已完成：原始 HTML 客服邮件页面已复制到 `prototype/stage_a/amazon_mail_stage_a.html`，仅保留会话切换、订单联动、回复输入和滚动；不调用 Coze、不显示 Agent 控件。交互范围见 `docs/stage_a_interaction_scope.md`。
 - 阶段 B 已完成：主页面 `prototype/stage_b/index.html` + `stage_b_server.py` 接入全局智能客服批处理、进度条、新邮件自动入队、失败重试和演示撤回。
+- 阶段 B 是唯一可运行主演示页：运行 `.venv\Scripts\python.exe stage_b_server.py --port 8511`，访问 `http://127.0.0.1:8511/`。旧版 `app.py` / Streamlit 工作台已删除，禁止恢复或启动 `8506`。
 - 阶段 16 面试材料：`docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md`、`docs/video_storyboard.md`；实际录屏需人工按分镜完成，通常不提交视频文件。
 - 8 条案例完成前不得声称完整 POC 评测通过；不得把 PAT 写入聊天、仓库、截图或日志。
 
@@ -45,10 +46,11 @@
 - 一级：白名单低风险场景通过风险网关后写入本地模拟发件箱。
 - 二级：店管点击“AI回复”，编辑或确认草稿后模拟发送。
 - 三级：店管点击“生成参考回复”，完成高风险核对清单后模拟发送。
-- 演示入口：页面底部“模拟邮件台”浮动按钮，点击打开浮窗；支持输入邮件、选择订单并真实改变 SQLite 状态。
-- 阶段 A 页面入口：使用 `python -m http.server 8510 --bind 127.0.0.1 --directory prototype/stage_a`，访问 `http://127.0.0.1:8510/amazon_mail_stage_a.html`。阶段 A 为静态基线，不改变 SQLite。
+- 演示入口：阶段 B 页面底部“模拟邮件台”浮动按钮，点击打开浮窗；支持输入邮件、选择订单并真实改变 SQLite 状态。
+- 智能客服：位于邮件主区域顶部的外部全局开关，开启后批量处理全部待处理买家站内信，新邮件自动入队；它不是当前会话开关。
+- 阶段 A 仅为静态原型基线资料，不是可运行演示入口。
 - 数据边界：全部使用虚构数据，不连接真实 Amazon、邮箱、支付或订单写接口。
-- 技术路线：Python 3.11、Streamlit、CSS/局部 HTML、SQLite、Pydantic、MCP Python SDK、Coze Workflow、本地状态机、pytest 和 JSONL 评测。
+- 技术路线：Python 3.11、本地 HTTP 服务、HTML/CSS/JavaScript、SQLite、Pydantic、MCP Python SDK、Coze Workflow、本地状态机、pytest 和 JSONL 评测。
 
 不得新增主管、管理员、审批队列、工单、退款审核、政策邮件、政策文件夹、政策治理、真实发送、真实退款、Multi-Agent、LangGraph 或 FastAPI。
 

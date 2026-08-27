@@ -2,6 +2,8 @@
 
 > 本指南用于让技术背景较弱的产品经理和没有聊天上下文的 AI，按正确顺序完成 ReplyFlow。产品定义以 [ReplyFlow高风险售后Agent_PRD.md](./ReplyFlow高风险售后Agent_PRD.md) 为准。
 
+> **当前最终页面契约（2026-08-27）**：阶段 B HTML 页面 `prototype/stage_b/index.html` 配合 `stage_b_server.py` 是唯一可运行主演示页，入口为 `http://127.0.0.1:8511/`。旧版 `app.py` / Streamlit 工作台已删除。本指南中阶段 3、12、15、16 的 Streamlit 历史记录仅用于追溯，不得恢复为运行入口。
+
 ## 1. 开始前必须形成的共同认知
 
 ### 1.1 最终产品
@@ -35,7 +37,7 @@ ReplyFlow 不是独立聊天机器人，也不是第二套客服系统。它是�
 ### 1.4 技术路线
 
 - Python 3.11；
-- Streamlit；
+- HTML、CSS、JavaScript 与本地 Python HTTP 服务；
 - SQLite；
 - Pydantic 2；
 - MCP Python SDK / FastMCP；
@@ -83,7 +85,7 @@ AI 每阶段结束必须给出：修改文件、命令、测试结果、人工�
 
 ```text
 work/reply-flow-agent/
-├─ app.py
+├─ stage_b_server.py
 ├─ src/replyflow/
 │  ├─ config.py
 │  ├─ models.py
@@ -247,17 +249,17 @@ Draft 输入 email、verified_facts_json、reply_basis_json、risk_context_json�
 
 ---
 
-## 阶段 3：工程骨架
+## 阶段 3：工程骨架（历史记录，已由阶段 B 替代）
 
-**目标**：建立可安装、可测试、可启动的最小 Streamlit 工程。
+**状态**：旧页面工作台已删除，本节仅保留工程演进记录，不得执行其中旧命令或恢复旧入口。
 
 **AI 提示词**：
 
 ```text
 本轮只搭工程骨架。
-依赖限定为 Streamlit、Pydantic 2、MCP Python SDK/FastMCP、python-dotenv、requests、pytest。
-创建 src/replyflow 包、app.py、tests 和目录结构。
-app.py 只显示：个人作品、模拟数据、顶部聚合站内信定位、Demo/Interactive模式和未实现提示。
+当前依赖为 Pydantic 2、MCP Python SDK/FastMCP、python-dotenv、requests、reportlab 和 pytest。
+保留 `src/replyflow`、`stage_b_server.py`、`prototype/stage_b`、tests 和目录结构。
+唯一页面入口只服务顶部聚合站内信和全局智能客服，不保留旧页面工作台。
 不要创建审核队列、角色切换、政策管理、工单或退款页面。
 添加import/config测试并更新README、PROJECT_STATUS。
 ```
@@ -267,7 +269,7 @@ app.py 只显示：个人作品、模拟数据、顶部聚合站内信定位、D
 ```powershell
 python -m pip install -r requirements.txt
 python -m pytest -q
-python -m streamlit run app.py
+python stage_b_server.py --port 8511
 ```
 
 **验收**：页面可打开；未配置 Coze 不崩溃；没有独立聊天首页。
@@ -542,14 +544,14 @@ Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖r
 
 ---
 
-## 阶段 12：顶部聚合站内信与模拟邮件浮窗 UI（历史实现）
+## 阶段 12：动态邮件能力（历史记录，已由阶段 B 主演示页承载）
 
-**目标**：完成最有说服力的动态页面：输入一行邮件并看到它进入站内信、分级和回复。
+**状态**：历史工作台已删除。动态邮件浮窗、订单关联、L1/L2/L3 处理和失败重试均以阶段 B HTML 主演示页为准。
 
 **AI 提示词**：
 
 ```text
-本轮只做 Streamlit 顶部聚合站内信和动态模拟邮件浮窗，不改核心规则；页面只保留 Coze 单一模式，由智能客服开关控制是否调用。
+本轮只维护阶段 B HTML 顶部聚合站内信和动态模拟邮件浮窗，不改核心规则；页面只保留 Coze 单一模式，由邮件主区域顶部的全局智能客服开关控制是否调用。
 
 页面结构：
 1. 页面右下角固定“模拟收到邮件”浮动按钮，点击打开模态浮窗；
@@ -573,7 +575,7 @@ Coze不能执行发送、退款、改订单、工单、审批，也不能覆盖r
 
 ```powershell
 python -m pytest -q
-python -m streamlit run app.py
+python stage_b_server.py --port 8511
 ```
 
 **人工验收脚本**：
@@ -597,7 +599,7 @@ python -m streamlit run app.py
 
 **执行要求**：
 
-1. 使用用户提供的 `0730亚马逊客服邮件能力建设原型.html` 作为页面基线，不用 Streamlit 重新拼接页面 DOM。
+1. 使用用户提供的 `0730亚马逊客服邮件能力建设原型.html` 作为页面基线，不以新页面框架重新拼接页面 DOM。
 2. 保留原页面 6 条静态会话和原型订单信息；不把后端 30 封测试邮件全部放入首页。
 3. 只保留点击会话切换详情、订单匹配联动、回复输入框输入/编辑/清空和区域滚动。
 4. 导航、筛选、文件夹、排序、搜索、分页、时间切换、提醒、同步、订单操作、外链、弹窗、保存草稿和发送均只做视觉展示。
@@ -633,16 +635,16 @@ python -m streamlit run app.py
 5. Coze 失败只显示“AI 处理失败”和错误码，不回退本地规则、不伪造草稿。
 6. FAILED 会话显示“重试 AI”按钮；开启智能客服后可重新调用 Coze，复用原邮件和订单上下文，不重复创建邮件。
 7. 页面底部“模拟邮件台”打开浮窗；选择订单后即时展示摘要，提交邮件后新会话置顶并自动选中。
-8. 使用 `st.container(border=True)` 或独立局部 HTML 卡片，不使用原始 HTML 包裹后续 Streamlit 组件，避免空白遮罩。
+8. 页面使用原 HTML 骨架和原生 JavaScript，通过 `stage_b_server.py` 的本地 API 更新状态；不另建第二套页面或组件容器。
 9. 智能客服开关是全局开关；打开前提示当前待处理数量，确认后批量处理所有待分析/失败的买家站内信，并显示当前序号和 L1/L2/L3/失败计数。
 10. 开关保持开启时，新接入买家站内信自动进入处理队列；关闭后允许当前任务完成，但清空尚未开始的排队任务。
 11. 阶段 B 增加一次性按钮“撤回上一轮处理（演示）”：仅已完成批次可撤回，批次进行中禁用；回退本地模拟发件箱、草稿和线程状态，并在 `stage_b_rollback_events` 留痕。
 
-**历史验收结果**：旧版 Streamlit Agent 工作台曾验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；阶段 B HTML 增量页面现已包含全局批处理、进度和演示撤回能力，需按本节重新验收。
+**历史验收结果**：已删除的旧页面曾验证原型骨架、智能客服开关、模拟邮件台、订单侧栏和 Coze 失败状态；阶段 B HTML 增量页面现已包含全局批处理、进度和演示撤回能力，需按本节重新验收。
 
-**Git**：`git add app.py src tests README.md PROJECT_STATUS.md; git commit -m "feat: build dynamic aggregated inbox demo"; git push origin main`
+**Git**：`git add stage_b_server.py prototype/stage_b src tests README.md PROJECT_STATUS.md; git commit -m "feat: finalize stage B global customer service demo"; git push origin main`
 
-**常见失败**：Streamlit rerun 重复执行时，使用 session state + operation_id 修复，不能只把按钮隐藏。
+**常见失败**：浏览器刷新或重复点击时，使用本地批次 ID、状态机和 outbox 去重保证幂等；不要通过第二个页面或前端框架规避该问题。
 
 ---
 
@@ -730,13 +732,13 @@ python -m pytest -q
 金额使用Decimal并测试边界。
 ```
 
-**命令**：`python -m pytest tests\test_roi.py -q; python -m streamlit run app.py`
+**命令**：`python -m pytest tests\test_roi.py -q; python stage_b_server.py --port 8511`
 
 **验收**：三级占比升高或审核时间增加时，收益合理下降。
 
 **完成定义**：页面同时能展示值得做和不值得做的参数区间。
 
-**Git**：`git add src app.py tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow ROI sensitivity analysis"; git push origin main`
+**Git**：`git add src tests README.md PROJECT_STATUS.md; git commit -m "feat: add ReplyFlow ROI sensitivity analysis"; git push origin main`
 
 **完成记录（2026-08-26）**：已新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`。计算模型将未被 L1/L2/L3 路由的邮件保留在人工路径，使用 `Decimal` 输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；页面底部新增可展开的 ROI 敏感性分析面板，提供保守/基准/乐观预置情景、可编辑参数、正负收益提示和明确的虚构数据免责声明。ROI 专项测试 10 条、全量测试 108 条均通过。
 
@@ -758,7 +760,7 @@ python -m pytest -q
 5. 解释混合架构和模拟边界。
 
 创建单页HTML/PDF案例说明和2-3分钟录屏分镜。只能使用本项目虚构数据和实际评测数字；不使用参考原型中的真实姓名、店铺、邮箱和订单。
-HTML不能替代可运行Streamlit Demo。
+案例 HTML/PDF 不能替代可运行的阶段 B 主演示页。
 ```
 
 **命令**：
@@ -766,7 +768,7 @@ HTML不能替代可运行Streamlit Demo。
 ```powershell
 python -m pytest -q
 python evals\run_eval.py --mode demo
-python -m streamlit run app.py
+python stage_b_server.py --port 8511
 ```
 
 **人工验收**：录屏从“输入一行邮件”开始；明确 Demo/Interactive 和模拟发送；不展示 Key。
@@ -777,7 +779,7 @@ python -m streamlit run app.py
 
 **常见失败**：如果视频只展示预置静态会话，重新录制动态接入过程。
 
-**完成记录（2026-08-26）**：已完成 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md` 和 `docs/video_storyboard.md`；新增 `scripts/generate_case_study_pdf.py` 支持从本地案例内容重建 PDF。材料只引用项目虚构数据和阶段 14 实际评测数字，明确 Demo/Interactive No-Go、Coze 额度限制、混合架构职责和“HTML/PDF 不能替代可运行 Streamlit Demo”。
+**完成记录（2026-08-26，2026-08-27 更新）**：已完成 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md` 和 `docs/video_storyboard.md`；新增 `scripts/generate_case_study_pdf.py` 支持从本地案例内容重建 PDF。材料只引用项目虚构数据和阶段 14 实际评测数字，明确 Coze 额度限制、混合架构职责和“HTML/PDF 不能替代可运行阶段 B 主演示页”。
 
 ---
 

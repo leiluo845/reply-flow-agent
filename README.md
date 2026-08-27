@@ -10,7 +10,7 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 2：已完成真实运行记录，8 条案例均有 Run ID 或重试记录；P05 保留依据外断言警告，尚未宣称全部案例无缺陷通过。
 
-阶段 3：已完成最小工程骨架。项目现在可以安装依赖、运行测试，并启动一个仅展示定位和未实现提示的 Streamlit 页面。
+阶段 3：已完成最小 Python 工程骨架。项目可以安装依赖、运行测试，并启动阶段 B 本地 HTTP 演示服务。
 
 阶段 4：已完成全虚构种子数据、只读回复依据和校验脚本。
 
@@ -28,7 +28,7 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 11：已完成 Coze Interactive 客户端、Interactive 编排本地代码、mock 测试和真实 Analyze/Draft API 联调。请求体使用开始节点要求的 `parameters.payload_json`；未知 intent 会被本地 Schema 阻断。
 
-阶段 13：已完成原亚马逊客服邮件工作台骨架复刻。旧版 Streamlit 工作台仍可运行，用于保留既有 Agent 逻辑回归。
+阶段 13：已完成原亚马逊客服邮件工作台骨架复刻，并合并进入阶段 B HTML 主演示页；旧版 Streamlit 工作台已废弃并从仓库移除。
 
 阶段 A：已完成原 HTML 客服邮件页面基线。主展示文件为 `prototype/stage_a/amazon_mail_stage_a.html`；阶段 A 只保留会话切换、订单联动、回复输入和滚动，不调用 Coze、不显示 Agent 控件。标注版和交互范围见 `prototype/stage_a/` 与 `docs/stage_a_interaction_scope.md`。
 
@@ -36,13 +36,13 @@ ReplyFlow 是嵌入电商邮件系统顶部聚合站内信的 AI 回复能力作
 
 阶段 14：已完成 30 条离线评测（其中 13 条 R2），支持 `--mode demo/interactive`，输出 JSON/Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。当前 Demo 因复杂语义和高风险覆盖不足为 No-Go；Interactive 因 Coze 工作区额度不足为 No-Go，均保留真实失败证据，不伪造模型结果。
 
-阶段 15：已完成参数化 ROI 敏感性分析。`src/replyflow/roi.py` 使用 `Decimal` 计算人工节省、模型/维护/风险成本、净收益和盈亏平衡量；内置保守/基准/乐观三档假设，并在 Streamlit 工作台底部提供可编辑的 ROI 展示面板。所有结果均为虚构敏感性分析，不代表真实业务收益。
+阶段 15：已完成参数化 ROI 敏感性分析。`src/replyflow/roi.py` 使用 `Decimal` 计算人工节省、模型/维护/风险成本、净收益和盈亏平衡量；内置保守/基准/乐观三档假设。ROI 结果通过案例页和本地报告展示，所有结果均为虚构敏感性分析，不代表真实业务收益。
 
-阶段 16：已完成面试交付材料：单页 [HTML 案例说明](./docs/replyflow_case_study.html)、[PDF 案例说明](./docs/replyflow_case_study.pdf)、[5–7 分钟面试脚本](./docs/interview_script.md) 和 [2–3 分钟录屏分镜](./docs/video_storyboard.md)。案例页只使用项目虚构数据和阶段 14 实际评测数字；HTML/PDF 用于讲解，不能替代可运行的 Streamlit Demo。
+阶段 16：已完成面试交付材料：单页 [HTML 案例说明](./docs/replyflow_case_study.html)、[PDF 案例说明](./docs/replyflow_case_study.pdf)、[5–7 分钟面试脚本](./docs/interview_script.md) 和 [2–3 分钟录屏分镜](./docs/video_storyboard.md)。案例页只使用项目虚构数据和阶段 14 实际评测数字；HTML/PDF 用于讲解，不能替代可运行的阶段 B 主演示页。
 
 ## 项目定位与演示路径
 
-ReplyFlow 不是独立聊天机器人，而是在电商邮件系统“顶部聚合站内信”上增量接入的单 Agent 回复能力。页面保留原邮件工作台骨架；右下角「模拟邮件台」用于输入一行虚构邮件、选择虚构订单并观察状态变化：
+ReplyFlow 不是独立聊天机器人，而是在电商邮件系统“顶部聚合站内信”上增量接入的单 Agent 回复能力。唯一可运行的主演示页是阶段 B HTML 页面；右下角「模拟邮件台」用于输入一行虚构邮件、选择虚构订单并观察状态变化：
 
 ```text
 模拟邮件台 → 原始收件箱 → 顶部聚合站内信 → Coze Analyze/Draft
@@ -50,7 +50,7 @@ ReplyFlow 不是独立聊天机器人，而是在电商邮件系统“顶部聚�
 → 本地模拟 outbox、Trace、Audit
 ```
 
-唯一业务角色是店管。关闭智能客服时只接收和聚合邮件；开启后才调用 Coze。所有发送均为本地模拟写入，不连接真实 Amazon、邮箱、支付或订单接口。
+唯一业务角色是店管。智能客服是页面外部的全局开关，不属于某一封邮件：关闭时只接收和聚合邮件；开启后确认处理当前全部待处理买家站内信，并让后续新邮件自动入队。所有发送均为本地模拟写入，不连接真实 Amazon、邮箱、支付或订单接口。
 
 ## Agent 能力清单
 
@@ -106,14 +106,14 @@ Coze 负责概率型能力：意图识别、实体抽取和英文草稿生成。
 .\.venv\Scripts\python.exe -m pip install -e .
 .\.venv\Scripts\python.exe -m pytest -q
 python scripts\validate_seed_data.py
-.\.venv\Scripts\python.exe -m streamlit run app.py
+.\.venv\Scripts\python.exe stage_b_server.py --port 8511
 ```
 
-阶段 3 页面只是工作台骨架，不会产生真实发送；阶段 5 数据层只读写本地虚构数据库。Coze Workflow、POC 记录和动态 UI 均已完成，页面发送仍只写入本地 outbox。
+唯一主演示地址：`http://127.0.0.1:8511/`。页面默认全局智能客服关闭；开启后会提示待处理数量、批量处理所有待处理站内信并展示进度、L1/L2/L3/失败计数。新邮件在开关开启期间会自动加入队列；关闭后不再启动排队任务。
 
-当前 Agent 工作台地址：`http://localhost:8506`（本机启动 Streamlit 后）。阶段 A 静态基线可用 `python -m http.server 8510 --bind 127.0.0.1 --directory prototype/stage_a` 启动，访问 `http://127.0.0.1:8510/amazon_mail_stage_a.html`。阶段 A 不写入 SQLite；旧版 Agent 工作台的发送仍只写入本地 outbox。
+旧版 `app.py` / Streamlit 工作台已废弃并从仓库删除；不要启动 `8506`。阶段 A HTML 仅作为原型基线资料保留，不是可运行演示入口。
 
-阶段 B 预览：`.venv\Scripts\python.exe stage_b_server.py --port 8511`，访问 `http://127.0.0.1:8511/`。该页面仍只使用虚构数据；所有发送和撤回均为本地演示状态。
+阶段 B 页面仍只使用虚构数据；所有发送和撤回均为本地演示状态。
 
 生成/更新 PDF 案例页：
 

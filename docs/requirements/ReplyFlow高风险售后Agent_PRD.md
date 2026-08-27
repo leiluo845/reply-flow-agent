@@ -69,7 +69,7 @@ AI 回复需要以“待处理会话”为工作对象，而不是以某个邮�
 分析 → 查事实 → 生成回复 → 按级别处理 → 本地模拟发件箱
 ```
 
-产品形态上是“嵌入式能力”，工程演示上仍是独立 Streamlit Demo。这样既尊重现有业务信息架构，也不依赖公司系统或真实接口。
+产品形态上是“嵌入式能力”，工程演示上通过本地 Python HTTP 服务运行阶段 B HTML Demo。这样既尊重现有业务信息架构，也不依赖公司系统或真实接口。
 
 ### 2.3 作品要证明的能力
 
@@ -411,11 +411,11 @@ flowchart TD
 ### 10.1 页面信息架构
 
 ```text
-ReplyFlow Streamlit Demo
+ReplyFlow 阶段 B HTML Demo
 └─ 邮件消息
    ├─ 页面底部浮动按钮：模拟邮件台
    │  └─ 模态浮窗：主题、正文、发件人、订单候选、订单摘要、接收方式
-   ├─ 顶部：原型工具栏占位、智能客服开关、模拟数据标识
+   ├─ 邮件主区域顶部：外部全局智能客服开关、批处理进度、模拟数据标识
    ├─ 文件夹栏：原型邮箱树占位，不支持切换
    ├─ 会话列表栏：当前文件夹内的会话/邮件
    ├─ 详情栏：邮件线程、处理级别、回复输入框
@@ -696,7 +696,7 @@ Skill 是可版本化的任务说明，不是简单一句 Prompt。
 
 ```mermaid
 flowchart TB
-    UI[顶部聚合站内信 Streamlit] --> CONSOLE[演示控制台]
+    UI[顶部聚合站内信 HTML 页面] --> CONSOLE[演示控制台]
     UI --> ORCH[Python Agent Orchestrator]
     CONSOLE --> SWITCH{智能客服开关}
     UI --> SWITCH{智能客服开关}
@@ -716,7 +716,7 @@ flowchart TB
 | 模块 | 技术 | 原因 |
 |---|---|---|
 | 语言 | Python 3.11 | AI 编程资料多，单语言降低难度 |
-| 页面 | Streamlit + CSS/局部 HTML | 复刻原邮件工作台并承载动态 Agent 演示 |
+| 页面 | HTML + CSS + JavaScript + Python `http.server` 风格本地服务 | 在原邮件工作台上增量接入动态 Agent 演示 |
 | 数据库 | SQLite | 无需数据库服务，可重置演示数据 |
 | Schema | Pydantic 2 | 约束 Agent、Tool 和状态输出 |
 | MCP | MCP Python SDK / FastMCP | 展示标准 Tool 边界 |
@@ -731,10 +731,10 @@ flowchart TB
 ## 17. 非功能需求
 
 - Coze 单封邮件从模拟接收到结果显示模型调用耗时、版本和失败原因，超时默认 30 秒。
-- Streamlit rerun、重复点击和浏览器刷新不能产生重复 outbox 记录。
+- HTML 页面刷新、重复点击和浏览器刷新不能产生重复 outbox 记录。
 - 页面在 1366×768 及以上分辨率可读；窄屏可将右栏折叠为 Tab。
 - 日志保存摘要、ID、错误码和 trace_id，不保存 Coze PAT/Token；邮箱显示可脱敏。
-- 核心逻辑不能全部写在 Streamlit 页面函数中，必须可被 pytest 调用。
+- 核心逻辑不能全部写在页面 JavaScript 中，必须保留在可被 pytest 调用的 Python 模块中。
 
 ---
 

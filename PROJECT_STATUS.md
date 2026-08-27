@@ -6,7 +6,9 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 
 ## 当前阶段
 
-阶段 16（README、HTML/PDF、视频和面试脚本）已完成：在阶段 15 ROI 和阶段 14 评测证据基础上，新增单页案例说明、PDF 版本、5–7 分钟面试脚本和 2–3 分钟录屏分镜。所有材料只使用项目虚构数据和实际评测数字，并明确 No-Go、Coze 额度限制和 HTML 不能替代可运行 Demo。阶段 B 页面、服务和 GitHub 备份保持可用。
+阶段 16 后续“主演示页收敛”已完成：删除旧版 `app.py` / Streamlit 工作台和 Streamlit 依赖；阶段 B HTML 页面 `prototype/stage_b/index.html` + `stage_b_server.py` 是唯一可运行演示入口，固定为 `http://127.0.0.1:8511/`。智能客服恢复为邮件主区域顶部的外部全局开关，负责批处理、进度显示和新邮件自动入队；GitHub 备份保持可用。
+
+2026-08-27 收敛复核：已从本机虚拟环境卸载 Streamlit，清理历史文档中的可执行旧命令；当前浏览器已切换到 `http://127.0.0.1:8511/`，API 返回 200，默认全局开关关闭、待处理 7 封。阶段 B 全量测试 `109 passed`。
 
 ## 已完成
 
@@ -34,7 +36,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
   - `pyproject.toml`
   - `requirements.txt`
   - `pytest.ini`
-  - `app.py`
+  - `stage_b_server.py`（当前唯一页面服务入口；旧版 `app.py` 已删除）
   - `src/replyflow/__init__.py`
   - `src/replyflow/config.py`
   - `tests/test_config.py`
@@ -92,12 +94,12 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 已完成阶段 11 本地真实 API 联调：`.env` 已由用户在本机配置，Analyze 与 Draft 均通过已发布 Workflow 返回结构化结果；修正请求体为 `parameters.payload_json`，与扣子开始节点契约一致。
 - 已完成阶段 2 八案例真实运行：`scripts/run_coze_poc.py` 生成 `poc/coze/poc_results.jsonl`；P01 超时后重试成功，P06 首次意图漂移后通过本地枚举收紧并重跑；结果与失败分析写入 `poc/coze/poc_results.md`。
 - 已将 `AnalyzeOutput.intent` 收紧为 11 个允许枚举，未知意图会返回 `MODEL_OUTPUT_INVALID`，不会进入风险路由。
-- 已完成阶段 12 Streamlit 动态工作台：参考亚马逊客服邮件原型完成店铺/状态/搜索工具栏、文件夹栏、聚合会话列表、邮件详情和右侧订单信息栏；右下角浮动按钮打开模拟邮件浮窗，支持订单候选、订单摘要、模拟接收和仅接收不处理；顶部聚合、原始收件箱、本地发件箱、L1/L2/L3 展示、风险与 Tool Trace 折叠栏、二次确认和三级核对清单保持可用。
+- 阶段 12 的动态工作台能力已收敛进阶段 B HTML 页面：包含模拟邮件浮窗、订单候选、顶部聚合、本地发件箱、L1/L2/L3、风险与 Trace、确认和三级核对。
 - 已完成阶段 12 UI 幂等和纯函数测试：稳定 `source_message_id` 防重复接入，二级/三级发送按钮按状态和清单控制。
 - 已完成阶段 13 页面重构：以原 HTML 邮件工作台为骨架，复刻深色 OMS 导航、顶部工具栏占位、邮箱树、会话列表、邮件详情和订单侧栏；除智能客服开关、模拟邮件台和回复操作外，其余区域只做展示。
 - 已完成阶段 13 Agent 交互：关闭智能客服时模拟邮件只接收不调用 Coze；开启后自动调用 Coze，L1 自动回复、L2 草稿待确认、L3 高风险核对；Coze 失败直接显示 AI 处理失败，不回退 Demo Router。
 - 已补充 AI 失败重试：FAILED 会话显示“重试 AI”，开启智能客服后可重新调用 Coze；失败会话允许新 interactive task，但 source_message_id、邮件记录和 outbox 仍保持幂等。
-- 新增页面规范 `docs/ui_prototype_spec.md`，规定原 HTML 骨架、交互边界、风险标签、订单摘要和 Streamlit + CSS/局部 HTML 实现约束。
+- 新增页面规范 `docs/ui_prototype_spec.md`，规定原 HTML 骨架、交互边界、风险标签、订单摘要和 HTML/CSS/JavaScript + 本地 Python 服务实现约束。
 - 已完成阶段 A 静态基线：复制原 HTML 到 `prototype/stage_a/amazon_mail_stage_a.html`，冻结无关控件为静态展示；保留会话切换、订单联动、回复输入和滚动。
 - 已生成阶段 A 标注版 `prototype/stage_a/amazon_mail_stage_a-标注版.html`、标注数据 `prototype/stage_a/annotations.json` 和交互范围文档 `docs/stage_a_interaction_scope.md`。
 - 已创建阶段 B HTML 增量页面 `prototype/stage_b/index.html` 和本地桥接服务 `stage_b_server.py`。
@@ -108,9 +110,10 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 阶段 13 端到端控制验证：新增 `tests/test_reply_flow_e2e.py`，覆盖 L1 自动发送、L2 确认与编辑稿、L3 核对清单、重复发送幂等、payload 冲突、Tool/Coze 失败升级和重试。
 - `send_simulated_reply` 新增可选 `checklist` 输入；当线程为 L3 时，Tool 层读取最新本地风险决策并强制校验所有必填核对项，返回 `CHECKLIST_REQUIRED` 时不写入 outbox。
 - 阶段 14 离线评测：新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条案例（13 条 R2），输出 Demo/Interactive JSON 与 Markdown 报告、指标切片、trace_ref 和自动 Go/Conditional Go/No-Go。
-- 阶段 15 ROI 敏感性分析：新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`；支持月邮件量、L1/L2/L3 占比、人工/AI 时间、人工小时成本、模型成本、维护成本、错误概率和单次预期损失等参数；输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；Streamlit 页面提供三档预置情景对比及当前情景编辑；使用 `Decimal` 并覆盖零量、无盈亏平衡、占比边界和 L3 敏感性测试。
+- 阶段 15 ROI 敏感性分析：新增 `src/replyflow/roi.py` 与 `tests/test_roi.py`；支持月邮件量、L1/L2/L3 占比、人工/AI 时间、人工小时成本、模型成本、维护成本、错误概率和单次预期损失等参数；输出人工节省、人工节省价值、模型成本、维护成本、风险成本、净收益和盈亏平衡量；使用 `Decimal` 并覆盖零量、无盈亏平衡、占比边界和 L3 敏感性测试。
 - 阶段 16 面试交付材料：新增 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md`、`docs/video_storyboard.md` 和 `scripts/generate_case_study_pdf.py`；案例页覆盖定位、动态链路、混合架构、三级风险、评测证据和限制；脚本强制从动态模拟邮件开始，并提供 Coze 失败时的诚实兜底。
 - 阶段 16 技术图谱：新增 `docs/技术图谱.md`，按展示层、接入聚合、Agent 编排、Coze、Skills、MCP Tools、风险网关、状态机、数据证据、评测与 ROI 分层说明组成、职责和完整处理链路。
+- 主演示页收敛：删除 `app.py` 与 Streamlit 依赖，新增 ADR-012；README、PRD、行动指南、页面规范、面试材料和新电脑恢复指南统一为阶段 B HTML 服务 `stage_b_server.py --port 8511`。全局智能客服开关位于邮件主区域顶部，不属于单封邮件。
 
 ## 本轮修改
 
@@ -144,10 +147,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：通过，本地包 `reply-flow-agent==0.3.0` 可导入。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
 - 结果：通过，82 passed（FastMCP 导入产生 1 条依赖警告，不影响测试）。
-- 命令：`.venv\\Scripts\\python.exe -c "import streamlit, pydantic, mcp, requests, dotenv, pytest; import replyflow; print('imports ok', replyflow.__version__)"`
-- 结果：通过，输出 `imports ok 0.3.0`。
-- 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
-- 结果：通过，Streamlit 启动并输出 `Local URL: http://localhost:8506`；验证后已停止进程。
+- 历史记录：旧页面工作台曾完成依赖导入和本地启动验证；该入口已删除，不再可运行或用于验收。
 - 命令：`python scripts/validate_seed_data.py`
 - 结果：通过，`Seed data validation passed.`，emails=30、orders=20、shipping_events=52、basis_docs=4、cases=30、r2_cases=13。
 - 命令：`.venv\\Scripts\\python.exe scripts\\init_db.py --db data\\local\\stage5_smoke.sqlite3`（连续执行两次）
@@ -166,8 +166,7 @@ ReplyFlow｜聚合站内信 AI 回复与动态演示工作台
 - 结果：真实调用 8 条案例，首次运行 `schema_valid=7`、`failed=1`（P01 超时）；P01 重试和 P06 枚举收紧后的重跑记录见 `poc/coze/poc_results_retry.jsonl`。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
 - 结果：通过，`87 passed`；包含 UI helper、Coze、风险网关和全部既有测试。
-- 命令：`.venv\\Scripts\\python.exe -m streamlit run app.py --server.headless true --server.port 8506`
-- 结果：通过，浏览器访问 `http://localhost:8506`；已验收一级自动回复、二级确认、三级核对、重复点击幂等和本地模拟发件箱计数变化。
+- 历史记录：旧页面工作台曾验收一级自动回复、二级确认、三级核对、重复点击幂等和本地模拟发件箱计数变化；现统一由阶段 B 主演示页验证。
 - 命令：`.venv\\Scripts\\python.exe -m pytest -q`
 - 结果：通过，`91 passed`；包含 Coze 失败重试、阶段 B 全局批处理持久化、队列关闭和演示撤回回退测试。
 - 命令：`.venv\\Scripts\\python.exe -m pytest tests\\test_reply_flow_e2e.py -q`

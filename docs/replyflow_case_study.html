@@ -32,7 +32,7 @@
 
   <h2>03｜混合架构</h2>
   <div class="arch"><div class="box"><h3>Coze 模型编排层</h3><ul><li>Analyze：意图、订单号、置信度</li><li>Draft：基于输入生成英文草稿</li><li>失败时返回结构化错误</li></ul></div><div class="box"><h3>ReplyFlow 控制层</h3><ul><li>8 个 MCP Tools</li><li>3 个可版本化 Skills</li><li>订单/物流事实、回复依据</li></ul></div><div class="box"><h3>确定性安全边界</h3><ul><li>R0–R3 风险网关</li><li>L1–L3 状态机</li><li>确认、幂等、审计、本地 outbox</li></ul></div></div>
-  <p><span class="tag">email_triage</span><span class="tag">reply_drafting</span><span class="tag">risk_routing</span><span class="tag">MCP × 8</span><span class="tag">SQLite</span><span class="tag">Streamlit + CSS</span></p>
+  <p><span class="tag">email_triage</span><span class="tag">reply_drafting</span><span class="tag">risk_routing</span><span class="tag">MCP × 8</span><span class="tag">SQLite</span><span class="tag">HTML + CSS + JavaScript</span></p>
 
   <h2>04｜风险分级与人机协同</h2>
   <table><thead><tr><th>处理级别</th><th>典型场景</th><th>系统动作</th><th>人工边界</th></tr></thead><tbody><tr><td class="ok">L1 / R0–R1</td><td>有订单依据的物流状态咨询</td><td>通过风险网关后写入本地模拟发件箱</td><td>无需逐封确认，但仍保留 Trace</td></tr><tr><td class="warn">L2 / R1</td><td>尺码、换货等需要措辞判断的咨询</td><td>生成草稿并填入原回复框</td><td>店管编辑/确认后才可模拟发送</td></tr><tr><td class="danger">L3 / R2</td><td>退款、拒付、投诉或高承诺风险</td><td>生成草稿并显示风险原因</td><td>核对清单未完成时发送被阻断</td></tr></tbody></table>
@@ -45,6 +45,6 @@
   <table><thead><tr><th>选择</th><th>理由</th></tr></thead><tbody><tr><td>Coze + 自建控制层</td><td>用 Coze 快速验证模型编排，用本地代码掌控事实、风险、状态和审计；两者职责可测试、可替换。</td></tr><tr><td>虚构数据 + 本地 outbox</td><td>独立演示、不泄露公司数据，也不把作品误包装成已上线系统。</td></tr><tr><td>不做多 Agent/真实写接口</td><td>聚焦单 Agent 客服回复和高风险人机协同，控制演示范围与安全边界。</td></tr><tr><td>ROI 只做敏感性分析</td><td>帮助讨论假设区间，不声称真实财务收益。</td></tr></tbody></table>
 
   <h2>07｜如何运行</h2>
-  <p><code>.venv\Scripts\python.exe -m pytest -q</code></p><p><code>.venv\Scripts\python.exe -m streamlit run app.py</code></p><p>打开 <code>http://localhost:8506/</code>，从「模拟邮件台」输入一行邮件开始。</p>
+  <p><code>.venv\Scripts\python.exe -m pytest -q</code></p><p><code>.venv\Scripts\python.exe stage_b_server.py --port 8511</code></p><p>打开 <code>http://127.0.0.1:8511/</code>，从「模拟邮件台」输入一行邮件开始。</p>
   <div class="footer">ReplyFlow · 个人作品集案例说明 · 2026-08-26 · 仅用于面试演示与产品能力验证</div>
 </main></body></html>
