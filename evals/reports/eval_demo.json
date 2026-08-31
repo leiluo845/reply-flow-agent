@@ -195,7 +195,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-5CE943AAB690"
+      "trace_ref": "TRACE-D5C45713A79B"
     },
     {
       "case_id": "CASE-002",
@@ -248,7 +248,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-3E009F4E32F0"
+      "trace_ref": "TRACE-A74FF22CE719"
     },
     {
       "case_id": "CASE-003",
@@ -295,7 +295,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-D52FFC0B5D54"
+      "trace_ref": "TRACE-35A88DE05DE4"
     },
     {
       "case_id": "CASE-004",
@@ -345,7 +345,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-393DC61AAA81"
+      "trace_ref": "TRACE-D8695BA03E9D"
     },
     {
       "case_id": "CASE-005",
@@ -392,7 +392,7 @@
         "intent",
         "tool_selection"
       ],
-      "trace_ref": "TRACE-A9B23392DFF2"
+      "trace_ref": "TRACE-EDF461A04A97"
     },
     {
       "case_id": "CASE-006",
@@ -444,7 +444,7 @@
       "failure_types": [
         "intent"
       ],
-      "trace_ref": "TRACE-0FFAFDD9C80D"
+      "trace_ref": "TRACE-19FBE4821A87"
     },
     {
       "case_id": "CASE-007",
@@ -494,7 +494,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-2EF6006341B5"
+      "trace_ref": "TRACE-AFF3499538ED"
     },
     {
       "case_id": "CASE-008",
@@ -544,7 +544,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-507AE70FFC11"
+      "trace_ref": "TRACE-24695717EEDE"
     },
     {
       "case_id": "CASE-009",
@@ -594,7 +594,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-20AB916DE5CE"
+      "trace_ref": "TRACE-B797F60BF844"
     },
     {
       "case_id": "CASE-010",
@@ -645,7 +645,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-41BF54EF3F7B"
+      "trace_ref": "TRACE-5D7679603E93"
     },
     {
       "case_id": "CASE-011",
@@ -697,7 +697,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-E1BD765A64F2"
+      "trace_ref": "TRACE-023CD6974781"
     },
     {
       "case_id": "CASE-012",
@@ -748,7 +748,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-F03219E7DFED"
+      "trace_ref": "TRACE-2469EDF89439"
     },
     {
       "case_id": "CASE-013",
@@ -799,7 +799,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-4F6F42EAA3ED"
+      "trace_ref": "TRACE-3832D0B94F7F"
     },
     {
       "case_id": "CASE-014",
@@ -851,7 +851,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-A3241376F618"
+      "trace_ref": "TRACE-673C50C7FAEF"
     },
     {
       "case_id": "CASE-015",
@@ -902,7 +902,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-4B9524FB98F1"
+      "trace_ref": "TRACE-5BBB6D05335D"
     },
     {
       "case_id": "CASE-016",
@@ -954,7 +954,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-43C5D9D6E7D1"
+      "trace_ref": "TRACE-3A08B4354484"
     },
     {
       "case_id": "CASE-017",
@@ -1004,7 +1004,7 @@
         "order_id",
         "tool_selection"
       ],
-      "trace_ref": "TRACE-B54C88862AF8"
+      "trace_ref": "TRACE-FAB4A90E25D9"
     },
     {
       "case_id": "CASE-018",
@@ -1058,7 +1058,7 @@
         "risk",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-28EB57BD31A9"
+      "trace_ref": "TRACE-F1EC66EBA713"
     },
     {
       "case_id": "CASE-019",
@@ -1109,7 +1109,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-42F9FA79881E"
+      "trace_ref": "TRACE-1F9960C16B7A"
     },
     {
       "case_id": "CASE-020",
@@ -1160,7 +1160,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-F6DD296251EC"
+      "trace_ref": "TRACE-F3F8BA8025B6"
     },
     {
       "case_id": "CASE-021",
@@ -1209,7 +1209,7 @@
         "order_id",
         "tool_selection"
       ],
-      "trace_ref": "TRACE-5B3EAE62952A"
+      "trace_ref": "TRACE-673C52F3801E"
     },
     {
       "case_id": "CASE-022",
@@ -1258,7 +1258,7 @@
         "order_id",
         "tool_selection"
       ],
-      "trace_ref": "TRACE-F18C4D89AC93"
+      "trace_ref": "TRACE-F1BC99CCB1D2"
     },
     {
       "case_id": "CASE-023",
@@ -1298,7 +1298,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-0AD1EB504AAC"
+      "trace_ref": "TRACE-BA12BE7CC7C0"
     },
     {
       "case_id": "CASE-024",
@@ -1339,7 +1339,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-7F7133979D88"
+      "trace_ref": "TRACE-3D338A8E9F61"
     },
     {
       "case_id": "CASE-025",
@@ -1394,7 +1394,7 @@
         "risk",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-22C735F9B660"
+      "trace_ref": "TRACE-D2D2CC4339CB"
     },
     {
       "case_id": "CASE-026",
@@ -1447,7 +1447,7 @@
       "failure_types": [
         "intent"
       ],
-      "trace_ref": "TRACE-3CE4F1534E7A"
+      "trace_ref": "TRACE-1DD09018AF55"
     },
     {
       "case_id": "CASE-027",
@@ -1496,7 +1496,7 @@
       "failure_types": [
         "intent"
       ],
-      "trace_ref": "TRACE-FBA4FA1484C8"
+      "trace_ref": "TRACE-E7D62A7170F6"
     },
     {
       "case_id": "CASE-028",
@@ -1550,7 +1550,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-A5F03E8E550C"
+      "trace_ref": "TRACE-E851594FDC60"
     },
     {
       "case_id": "CASE-029",
@@ -1600,7 +1600,7 @@
         "order_id",
         "tool_selection"
       ],
-      "trace_ref": "TRACE-1FC98866E207"
+      "trace_ref": "TRACE-23153912608B"
     },
     {
       "case_id": "CASE-030",
@@ -1654,7 +1654,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-76652166D6EA"
+      "trace_ref": "TRACE-00BCD6511069"
     }
   ]
 }
