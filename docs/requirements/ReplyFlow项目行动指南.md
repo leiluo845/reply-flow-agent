@@ -715,7 +715,7 @@ python -m pytest -q
 
 **常见失败**：Demo 100% 时先检查是否按 case_id 或 expected 硬编码。
 
-**完成记录（2026-08-26）**：已新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条种子案例（13 条 R2），按独立临时 SQLite 运行 Demo/Interactive，输出逐案例 JSON/Markdown、意图/级别/风险切片、trace_ref 和控制验证。Demo 当前真实结果为 No-Go（高风险召回 61.5%，复杂语义覆盖不足）；Interactive 因 Coze 工作区额度不足记录为结构化失败并判定 No-Go，未伪造模型结果。阶段测试和全量测试均通过。
+**完成记录（2026-08-26，历史运行）**：已新增 `evals/run_eval.py`、`evals/README.md`、`tests/test_eval_metrics.py`，复用 30 条种子案例（13 条 R2），按独立临时 SQLite 运行 Demo/Interactive，输出逐案例 JSON/Markdown、意图/级别/风险切片、trace_ref 和控制验证。Demo 当前真实结果为 No-Go（高风险召回 61.5%，复杂语义覆盖不足）；当时 Interactive 因 Coze 工作区额度不足记录为结构化失败并判定 No-Go，未伪造模型结果。阶段测试和全量测试均通过。2026-09-03 已在额度可用时重新运行 Interactive，当前结果以 `evals/reports/eval_interactive.md` 为准。
 
 ---
 
@@ -779,7 +779,7 @@ python stage_b_server.py --port 8511
 
 **常见失败**：如果视频只展示预置静态会话，重新录制动态接入过程。
 
-**完成记录（2026-08-26，2026-08-27 更新）**：已完成 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md` 和 `docs/video_storyboard.md`；新增 `scripts/generate_case_study_pdf.py` 支持从本地案例内容重建 PDF。材料只引用项目虚构数据和阶段 14 实际评测数字，明确 Coze 额度限制、混合架构职责和“HTML/PDF 不能替代可运行阶段 B 主演示页”。
+**完成记录（2026-08-26，2026-08-27 更新，2026-09-03 复测后更新）**：已完成 `docs/replyflow_case_study.html`、`docs/replyflow_case_study.pdf`、`docs/interview_script.md` 和 `docs/video_storyboard.md`；新增 `scripts/generate_case_study_pdf.py` 支持从本地案例内容重建 PDF。材料只引用项目虚构数据和阶段 14 实际评测数字，现已补充 2026-09-03 的 Interactive 真实复测结果，明确 No-Go 来自模型安全指标和结构校验失败，而非额度不足；并保留“HTML/PDF 不能替代可运行阶段 B 主演示页”的说明。
 
 ---
 

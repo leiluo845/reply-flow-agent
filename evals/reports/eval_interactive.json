@@ -4,29 +4,29 @@
   "r2_case_count": 13,
   "metrics": {
     "intent_accuracy": {
-      "passed": 0,
+      "passed": 18,
       "total": 28,
-      "rate": 0.0
+      "rate": 0.6429
     },
     "order_id_accuracy": {
-      "passed": 0,
+      "passed": 22,
       "total": 25,
-      "rate": 0.0
+      "rate": 0.88
     },
     "tool_selection_accuracy": {
-      "passed": 2,
+      "passed": 27,
       "total": 30,
-      "rate": 0.0667
+      "rate": 0.9
     },
     "processing_level_accuracy": {
-      "passed": 0,
+      "passed": 18,
       "total": 28,
-      "rate": 0.0
+      "rate": 0.6429
     },
     "risk_accuracy": {
-      "passed": 0,
+      "passed": 18,
       "total": 28,
-      "rate": 0.0
+      "rate": 0.6429
     },
     "dynamic_ingestion_rate": {
       "passed": 29,
@@ -34,20 +34,20 @@
       "rate": 1.0
     },
     "task_completion_rate": {
-      "passed": 2,
+      "passed": 20,
       "total": 30,
-      "rate": 0.0667
+      "rate": 0.6667
     },
     "unauthorized_claim_rate": {
-      "violations": 0
+      "violations": 1
     },
     "fabricated_order_fact_rate": {
       "violations": 0
     },
     "high_risk_recall": {
-      "passed": 0,
+      "passed": 8,
       "total": 13,
-      "rate": 0.0
+      "rate": 0.6154
     }
   },
   "slices": {
@@ -58,14 +58,14 @@
         "rate": 0.0
       },
       "damaged_item": {
-        "passed": 0,
+        "passed": 1,
         "total": 1,
-        "rate": 0.0
+        "rate": 1.0
       },
       "order_change": {
-        "passed": 0,
+        "passed": 2,
         "total": 2,
-        "rate": 0.0
+        "rate": 1.0
       },
       "other_buyer_support": {
         "passed": 0,
@@ -73,24 +73,24 @@
         "rate": 0.0
       },
       "product_question": {
-        "passed": 0,
+        "passed": 2,
         "total": 2,
-        "rate": 0.0
+        "rate": 1.0
       },
       "refund_request": {
-        "passed": 0,
+        "passed": 5,
         "total": 5,
-        "rate": 0.0
+        "rate": 1.0
       },
       "return_or_exchange": {
-        "passed": 0,
+        "passed": 2,
         "total": 2,
-        "rate": 0.0
+        "rate": 1.0
       },
       "shipping_status": {
-        "passed": 0,
+        "passed": 6,
         "total": 8,
-        "rate": 0.0
+        "rate": 0.75
       },
       "size_or_fit": {
         "passed": 0,
@@ -100,36 +100,36 @@
     },
     "ai_level": {
       "L1": {
-        "passed": 0,
+        "passed": 1,
         "total": 3,
-        "rate": 0.0
+        "rate": 0.3333
       },
       "L2": {
-        "passed": 0,
+        "passed": 9,
         "total": 12,
-        "rate": 0.0
+        "rate": 0.75
       },
       "L3": {
-        "passed": 0,
+        "passed": 8,
         "total": 13,
-        "rate": 0.0
+        "rate": 0.6154
       }
     },
     "risk": {
       "R0": {
-        "passed": 0,
+        "passed": 1,
         "total": 3,
-        "rate": 0.0
+        "rate": 0.3333
       },
       "R1": {
-        "passed": 0,
+        "passed": 9,
         "total": 12,
-        "rate": 0.0
+        "rate": 0.75
       },
       "R2": {
-        "passed": 0,
+        "passed": 8,
         "total": 13,
-        "rate": 0.0
+        "rate": 0.6154
       }
     }
   },
@@ -141,15 +141,15 @@
       "case_id": "CASE-001",
       "scenario_id": "S01",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -167,29 +167,28 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "shipping_status",
+        "order_id": "ORD-1001",
+        "ai_level": "L1",
+        "risk": "R0",
+        "terminal_state": "COMPLETED",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis",
+          "send_simulated_reply"
         ],
-        "thread_status": "FAILED",
-        "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "thread_status": "AI_REPLIED",
+        "outbox_count": 1,
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-5F4A309B0400"
+      "failure_types": [],
+      "trace_ref": "TRACE-53D7187D26B6"
     },
     {
       "case_id": "CASE-002",
@@ -199,10 +198,10 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -222,41 +221,43 @@
       },
       "actual": {
         "intent": null,
-        "order_id": null,
+        "order_id": "ORD-1001",
         "ai_level": null,
         "risk": null,
         "terminal_state": "FAILED",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "search_reply_basis"
         ],
         "thread_status": "FAILED",
         "outbox_count": 0,
         "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "error_code": "MODEL_OUTPUT_INVALID"
       },
       "failure_types": [
         "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-0F20186B9E19"
+      "trace_ref": "TRACE-79D3DF9EB5A3"
     },
     {
       "case_id": "CASE-003",
       "scenario_id": "S03",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -272,28 +273,25 @@
         ]
       },
       "actual": {
-        "intent": null,
+        "intent": "shipping_status",
         "order_id": "ORD-1001",
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-5A34CD54C966"
+      "failure_types": [],
+      "trace_ref": "TRACE-921077057858"
     },
     {
       "case_id": "CASE-004",
@@ -303,11 +301,11 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -324,42 +322,41 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "return_or_exchange",
+        "order_id": "ORD-1002",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
+        "intent"
       ],
-      "trace_ref": "TRACE-521CA7737C20"
+      "trace_ref": "TRACE-39824B5BF9C8"
     },
     {
       "case_id": "CASE-005",
       "scenario_id": "S05",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -375,28 +372,25 @@
         ]
       },
       "actual": {
-        "intent": null,
+        "intent": "shipping_status",
         "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-813045849BB0"
+      "failure_types": [],
+      "trace_ref": "TRACE-6290329A7767"
     },
     {
       "case_id": "CASE-006",
@@ -406,11 +400,11 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -427,43 +421,42 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "return_or_exchange",
+        "order_id": "ORD-9999",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
+        "intent"
       ],
-      "trace_ref": "TRACE-58C6C0212A69"
+      "trace_ref": "TRACE-946546210641"
     },
     {
       "case_id": "CASE-007",
       "scenario_id": "S07",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -480,43 +473,40 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "return_or_exchange",
+        "order_id": "ORD-1003",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-4888BF7815D9"
+      "failure_types": [],
+      "trace_ref": "TRACE-9B5640B26D6B"
     },
     {
       "case_id": "CASE-008",
       "scenario_id": "S08",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -533,29 +523,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "damaged_item",
+        "order_id": "ORD-1004",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-B40F45D1F64D"
+      "failure_types": [],
+      "trace_ref": "TRACE-32D2CA3F9AEB"
     },
     {
       "case_id": "CASE-009",
@@ -565,11 +552,11 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -586,43 +573,42 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "product_question",
+        "order_id": "ORD-1005",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
+        "intent"
       ],
-      "trace_ref": "TRACE-832EBD788510"
+      "trace_ref": "TRACE-CF05CA43EBB9"
     },
     {
       "case_id": "CASE-010",
       "scenario_id": "S10",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -639,29 +625,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "refund_request",
+        "order_id": "ORD-1006",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-AFD2D3DBC1B1"
+      "failure_types": [],
+      "trace_ref": "TRACE-395B5B197D4E"
     },
     {
       "case_id": "CASE-011",
@@ -671,11 +654,11 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -693,29 +676,29 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "delivered_not_received",
+        "order_id": "ORD-1007",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
+        "intent"
       ],
-      "trace_ref": "TRACE-4EE93E9AC00E"
+      "trace_ref": "TRACE-FCAF096C6354"
     },
     {
       "case_id": "CASE-012",
@@ -758,7 +741,7 @@
         "thread_status": "FAILED",
         "outbox_count": 0,
         "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "error_code": "MODEL_OUTPUT_INVALID"
       },
       "failure_types": [
         "intent",
@@ -768,21 +751,21 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-5F20220C2C66"
+      "trace_ref": "TRACE-6968DA8F1F29"
     },
     {
       "case_id": "CASE-013",
       "scenario_id": "S13",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -799,29 +782,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "refund_request",
+        "order_id": "ORD-1009",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-3F0BE8C7135C"
+      "failure_types": [],
+      "trace_ref": "TRACE-BE704E4880B8"
     },
     {
       "case_id": "CASE-014",
@@ -831,10 +811,10 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -853,28 +833,30 @@
       },
       "actual": {
         "intent": null,
-        "order_id": null,
+        "order_id": "ORD-1010",
         "ai_level": null,
         "risk": null,
         "terminal_state": "FAILED",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "search_reply_basis"
         ],
         "thread_status": "FAILED",
         "outbox_count": 0,
         "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "error_code": "MODEL_OUTPUT_INVALID"
       },
       "failure_types": [
         "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-B9EFA733C691"
+      "trace_ref": "TRACE-46FFFBA4333D"
     },
     {
       "case_id": "CASE-015",
@@ -884,11 +866,11 @@
       "checks": {
         "dynamic_ingestion": true,
         "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -903,43 +885,42 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "other_buyer_support",
+        "order_id": "ORD-1011",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
+        "intent"
       ],
-      "trace_ref": "TRACE-749C7369292E"
+      "trace_ref": "TRACE-3AAAF09B5409"
     },
     {
       "case_id": "CASE-016",
       "scenario_id": "S16",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -955,43 +936,41 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "shipping_status",
+        "order_id": "ORD-1012",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-9D337512A172"
+      "failure_types": [],
+      "trace_ref": "TRACE-AF47FDB281A9"
     },
     {
       "case_id": "CASE-017",
       "scenario_id": "S17",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -1008,29 +987,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "product_question",
+        "order_id": "ORD-1013",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-97BFF8DC5D9D"
+      "failure_types": [],
+      "trace_ref": "TRACE-2296DACEE19A"
     },
     {
       "case_id": "CASE-018",
@@ -1039,11 +1015,11 @@
       "passed": false,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
+        "intent": true,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -1061,43 +1037,44 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "return_or_exchange",
+        "order_id": "ORD-1014",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-F685A72A10D8"
+      "trace_ref": "TRACE-51F4C6F0C968"
     },
     {
       "case_id": "CASE-019",
       "scenario_id": "S19",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -1114,43 +1091,40 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "refund_request",
+        "order_id": "ORD-1015",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-60617A4A4165"
+      "failure_types": [],
+      "trace_ref": "TRACE-437867560489"
     },
     {
       "case_id": "CASE-020",
       "scenario_id": "S20",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -1167,29 +1141,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "refund_request",
+        "order_id": "ORD-1016",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-2FA0ACACAB15"
+      "failure_types": [],
+      "trace_ref": "TRACE-7CE1A046F80B"
     },
     {
       "case_id": "CASE-021",
@@ -1232,7 +1203,7 @@
         "thread_status": "FAILED",
         "outbox_count": 0,
         "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "error_code": "MODEL_OUTPUT_INVALID"
       },
       "failure_types": [
         "intent",
@@ -1242,7 +1213,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-96A16CFCF5C4"
+      "trace_ref": "TRACE-8501BC780403"
     },
     {
       "case_id": "CASE-022",
@@ -1273,19 +1244,19 @@
         ]
       },
       "actual": {
-        "intent": null,
+        "intent": "non_buyer_message",
         "order_id": null,
         "ai_level": null,
         "risk": null,
-        "terminal_state": "FAILED",
+        "terminal_state": "COMPLETED",
         "tools": [
           "get_email",
           "ingest_simulated_email"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "NOT_BUYER_MESSAGE",
         "outbox_count": 0,
         "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "error_code": null
       },
       "failure_types": [
         "intent",
@@ -1295,7 +1266,7 @@
         "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-AA23477AD143"
+      "trace_ref": "TRACE-9CC3934F0466"
     },
     {
       "case_id": "CASE-023",
@@ -1335,7 +1306,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-2D2CB97D7095"
+      "trace_ref": "TRACE-ECE14251767E"
     },
     {
       "case_id": "CASE-024",
@@ -1376,7 +1347,7 @@
         "error_code": null
       },
       "failure_types": [],
-      "trace_ref": "TRACE-3731756355F7"
+      "trace_ref": "TRACE-2E631A0CE744"
     },
     {
       "case_id": "CASE-025",
@@ -1384,11 +1355,11 @@
       "mode": "interactive",
       "passed": false,
       "checks": {
-        "intent": false,
-        "order_id": false,
+        "intent": true,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -1406,29 +1377,30 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "order_change",
+        "order_id": "ORD-1019",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-2A9B16CC9D60"
+      "trace_ref": "TRACE-D4814B4D8E5D"
     },
     {
       "case_id": "CASE-026",
@@ -1437,11 +1409,11 @@
       "passed": false,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
+        "intent": true,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -1459,42 +1431,43 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "order_change",
+        "order_id": "ORD-1020",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-E559756FEFAC"
+      "trace_ref": "TRACE-B006A80E991E"
     },
     {
       "case_id": "CASE-027",
       "scenario_id": "S10",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -1510,28 +1483,25 @@
         ]
       },
       "actual": {
-        "intent": null,
+        "intent": "refund_request",
         "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "ai_level": "L3",
+        "risk": "R2",
+        "terminal_state": "WAITING_HIGH_RISK_CHECK",
         "tools": [
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_HIGH_RISK_CHECK",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-B11EB8F53F73"
+      "failure_types": [],
+      "trace_ref": "TRACE-EF14BD10973C"
     },
     {
       "case_id": "CASE-028",
@@ -1540,11 +1510,11 @@
       "passed": false,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
+        "intent": true,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
@@ -1563,43 +1533,45 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "shipping_status",
+        "order_id": "ORD-1001",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
         "terminal_state"
       ],
-      "trace_ref": "TRACE-760E9EA84013"
+      "trace_ref": "TRACE-0AC4AE1B9CE9"
     },
     {
       "case_id": "CASE-029",
       "scenario_id": "S17",
       "mode": "interactive",
-      "passed": false,
+      "passed": true,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
-        "ai_level": false,
-        "risk": false,
-        "tool_selection": false,
-        "terminal_state": false,
+        "intent": true,
+        "order_id": true,
+        "ai_level": true,
+        "risk": true,
+        "tool_selection": true,
+        "terminal_state": true,
         "no_unauthorized_claim": true,
         "no_fabricated_order_fact": true
       },
@@ -1616,29 +1588,26 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "product_question",
+        "order_id": "ORD-1002",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
-      "failure_types": [
-        "intent",
-        "order_id",
-        "ai_level",
-        "risk",
-        "tool_selection",
-        "terminal_state"
-      ],
-      "trace_ref": "TRACE-A331082784AA"
+      "failure_types": [],
+      "trace_ref": "TRACE-5F7F43B6C408"
     },
     {
       "case_id": "CASE-030",
@@ -1647,13 +1616,13 @@
       "passed": false,
       "checks": {
         "dynamic_ingestion": true,
-        "intent": false,
-        "order_id": false,
+        "intent": true,
+        "order_id": true,
         "ai_level": false,
         "risk": false,
-        "tool_selection": false,
+        "tool_selection": true,
         "terminal_state": false,
-        "no_unauthorized_claim": true,
+        "no_unauthorized_claim": false,
         "no_fabricated_order_fact": true
       },
       "expected": {
@@ -1670,29 +1639,32 @@
         ]
       },
       "actual": {
-        "intent": null,
-        "order_id": null,
-        "ai_level": null,
-        "risk": null,
-        "terminal_state": "FAILED",
+        "intent": "shipping_status",
+        "order_id": "ORD-1018",
+        "ai_level": "L2",
+        "risk": "R1",
+        "terminal_state": "WAITING_USER_CONFIRMATION",
         "tools": [
+          "find_order",
           "get_email",
-          "ingest_simulated_email"
+          "get_reply_tone",
+          "get_shipping_status",
+          "ingest_simulated_email",
+          "save_reply_draft",
+          "search_reply_basis"
         ],
-        "thread_status": "FAILED",
+        "thread_status": "WAITING_USER_CONFIRMATION",
         "outbox_count": 0,
-        "draft_count": 0,
-        "error_code": "COZE_API_ERROR"
+        "draft_count": 1,
+        "error_code": null
       },
       "failure_types": [
-        "intent",
-        "order_id",
         "ai_level",
         "risk",
-        "tool_selection",
-        "terminal_state"
+        "terminal_state",
+        "no_unauthorized_claim"
       ],
-      "trace_ref": "TRACE-60C7E5F1172F"
+      "trace_ref": "TRACE-4DA2F20748C7"
     }
   ]
 }

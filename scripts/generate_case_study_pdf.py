@@ -40,16 +40,17 @@ def main() -> None:
         [Paragraph("指标", styles["CNSmall"]), Paragraph("结果", styles["CNSmall"]), Paragraph("解释", styles["CNSmall"])],
         [Paragraph("离线案例", styles["CNSmall"]), Paragraph("30（R2：13）", styles["CNSmall"]), Paragraph("Demo 评测集，含高风险切片", styles["CNSmall"])],
         [Paragraph("动态接入率", styles["CNSmall"]), Paragraph("100%（29/29）", styles["CNSmall"]), Paragraph("模拟邮件能进入聚合流程", styles["CNSmall"])],
-        [Paragraph("未授权承诺违规", styles["CNSmall"]), Paragraph("0", styles["CNSmall"]), Paragraph("控制验证通过", styles["CNSmall"])],
+        [Paragraph("Demo / Interactive 未授权承诺", styles["CNSmall"]), Paragraph("0 / 1", styles["CNSmall"]), Paragraph("Demo 通过；Interactive 复测发现 1 条", styles["CNSmall"])],
         [Paragraph("无依据订单事实违规", styles["CNSmall"]), Paragraph("0", styles["CNSmall"]), Paragraph("事实来自本地 Tool/依据层", styles["CNSmall"])],
-        [Paragraph("高风险召回", styles["CNSmall"]), Paragraph("61.5%", styles["CNSmall"]), Paragraph("未达安全门槛，自动决策 No-Go", styles["CNSmall"])],
+        [Paragraph("Demo / Interactive 高风险召回", styles["CNSmall"]), Paragraph("61.5%（8/13）", styles["CNSmall"]), Paragraph("两种模式均未达安全门槛，自动决策 No-Go", styles["CNSmall"])],
+        [Paragraph("Interactive 结构校验", styles["CNSmall"]), Paragraph("26/30", styles["CNSmall"]), Paragraph("4 条 Coze 输出未通过本地 Schema 校验", styles["CNSmall"])],
     ]
     tbl = Table(data, colWidths=[40 * mm, 36 * mm, 100 * mm], repeatRows=1)
     tbl.setStyle(TableStyle([("FONTNAME", (0, 0), (-1, -1), "MSYH"), ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eef2ff")), ("GRID", (0, 0), (-1, -1), .35, colors.HexColor("#dbe4f0")), ("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
     story.append(tbl)
     story.extend([
         Paragraph("05｜边界与限制", styles["CNH2"]),
-        Paragraph("Interactive 因 Coze 工作区额度不足记录为 No-Go；项目不连接真实 Amazon、邮箱、支付或订单接口，不包含主管/审批、多 Agent、政策治理等扩展范围。ROI 仅为虚构敏感性分析，不代表真实收益。", styles["CNBody"]),
+        Paragraph("2026-09-03 Interactive 复测时 Coze 额度可用，30 条案例完成评测；高风险召回 61.5%（8/13）、意图准确率 64.3%（18/28），出现 1 条未授权承诺和 4 条结构校验失败，因此仍为 No-Go。项目不连接真实 Amazon、邮箱、支付或订单接口，不包含主管/审批、多 Agent、政策治理等扩展范围。ROI 仅为虚构敏感性分析，不代表真实收益。", styles["CNBody"]),
         Spacer(1, 4 * mm),
         Paragraph("运行：.venv\\Scripts\\python.exe stage_b_server.py --port 8511 · http://127.0.0.1:8511/", styles["CNSmall"]),
     ])
